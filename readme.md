@@ -10,7 +10,7 @@ npm install -g tree-cli
 
 ## Authentication
 
-Get your API key from your Tree profile page at https://tree.tabors.site/api/v1/user/:USERID/api-keys?html, then:
+Get your API key from your Tree profile page at https://tree.tabors.site/api/v1/user/:USERID/api-keys?html (replacing userId with your own) then:
 
 ```bash
 tree login --key YOUR_API_KEY --user YOUR_USER_ID
