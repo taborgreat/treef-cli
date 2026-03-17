@@ -1,0 +1,24 @@
+{
+  "name": "tree-cli",
+  "version": "1.0.0",
+  "description": "CLI for Tree — navigate and manage your nodes like a filesystem",
+  "main": "index.js",
+  "bin": {
+    "tree": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "tree",
+    "cli",
+    "nodes"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "node-fetch": "^2.7.0"
+  }
+}
