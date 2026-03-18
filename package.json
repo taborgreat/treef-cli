@@ -1,10 +1,10 @@
 {
-  "name": "tree-cli",
+  "name": "treef-cli",
   "version": "1.0.0",
   "description": "CLI for Tree — navigate and manage your nodes like a filesystem",
   "main": "index.js",
   "bin": {
-    "tree": "./index.js"
+    "treef": "./index.js"
   },
   "scripts": {
     "start": "node index.js"

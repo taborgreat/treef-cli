@@ -41,6 +41,9 @@ class TreeAPI {
   }
 
   // ── User ─────────────────────────────────────────────────────────────────
+  me() {
+    return this.get("/me");
+  }
   getUser(userId) {
     return this.get(`/user/${userId}`);
   }
@@ -54,7 +57,10 @@ class TreeAPI {
   }
 
   // ── Node ─────────────────────────────────────────────────────────────────
-  getNode(nodeId, ver = 0) {
+  getNode(nodeId) {
+    return this.get(`/node/${nodeId}`);
+  }
+  getNodeVersion(nodeId, ver = 0) {
     return this.get(`/node/${nodeId}/${ver}`);
   }
   createChild(nodeId, name) {
@@ -76,9 +82,6 @@ class TreeAPI {
   // ── Notes ─────────────────────────────────────────────────────────────────
   listNotes(nodeId, ver = 0) {
     return this.get(`/node/${nodeId}/${ver}/notes`);
-  }
-  getNote(nodeId, ver, noteId) {
-    return this.get(`/node/${nodeId}/${ver}/notes/${noteId}`);
   }
   createNote(nodeId, ver, content) {
     return this.post(`/node/${nodeId}/${ver}/notes`, { content });
@@ -104,6 +107,48 @@ class TreeAPI {
   }
   place(rootId, message) {
     return this.post(`/root/${rootId}/place`, { message });
+  }
+
+  // ── Raw Ideas ───────────────────────────────────────────────────────────────
+  listRawIdeas(userId, opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.status) params.set("status", opts.status);
+    if (opts.q) params.set("q", opts.q);
+    if (opts.limit) params.set("limit", opts.limit);
+    const qs = params.toString();
+    return this.get(`/user/${userId}/raw-ideas${qs ? "?" + qs : ""}`);
+  }
+  getRawIdea(userId, rawIdeaId) {
+    return this.get(`/user/${userId}/raw-ideas/${rawIdeaId}`);
+  }
+  createRawIdea(userId, content) {
+    return this.post(`/user/${userId}/raw-ideas`, { content });
+  }
+  deleteRawIdea(userId, rawIdeaId) {
+    return this.del(`/user/${userId}/raw-ideas/${rawIdeaId}`);
+  }
+  rawIdeaPlace(userId, rawIdeaId) {
+    return this.post(`/user/${userId}/raw-ideas/${rawIdeaId}/place`, {});
+  }
+  transferRawIdea(userId, rawIdeaId, nodeId) {
+    return this.post(`/user/${userId}/raw-ideas/${rawIdeaId}/transfer`, { nodeId });
+  }
+
+  // ── Understandings ──────────────────────────────────────────────────────────
+  listUnderstandings(rootId) {
+    return this.get(`/root/${rootId}/understandings`);
+  }
+  createUnderstanding(rootId, perspective, incremental = false) {
+    return this.post(`/root/${rootId}/understandings`, { perspective, incremental });
+  }
+  getUnderstandingRun(rootId, runId) {
+    return this.get(`/root/${rootId}/understandings/run/${runId}`);
+  }
+  orchestrateUnderstanding(rootId, runId) {
+    return this.post(`/root/${rootId}/understandings/run/${runId}/orchestrate`, {});
+  }
+  stopUnderstanding(rootId, runId) {
+    return this.post(`/root/${rootId}/understandings/run/${runId}/stop`, {});
   }
 }
 

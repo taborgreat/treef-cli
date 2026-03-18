@@ -32,10 +32,7 @@ function save(config) {
 function requireAuth() {
   const cfg = load();
   if (!cfg.apiKey || !cfg.userId) {
-    console.error(
-      "Not logged in. Run: tree login --key YOUR_API_KEY --user YOUR_USER_ID",
-    );
-    process.exit(1);
+    throw new Error("Not logged in. Run: treef login --key YOUR_API_KEY");
   }
   return cfg;
 }
@@ -46,7 +43,7 @@ function currentNodeId(cfg) {
 }
 
 function currentPath(cfg) {
-  if (!cfg.activeRootName) return "/";
+  if (!cfg.activeRootName) return "~";
   const parts = [cfg.activeRootName, ...cfg.pathStack.map((n) => n.name)];
   return "/" + parts.join("/");
 }

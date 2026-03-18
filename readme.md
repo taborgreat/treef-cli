@@ -1,91 +1,119 @@
-# tree-cli
+# treef-cli
 
-A terminal CLI for [Tree](https://tree.tabors.site) — navigate and manage your trees exactly like a filesystem.
+CLI for [Tree](https://tree.tabors.site) — navigate and manage your trees like a filesystem.
+
+**https://tree.tabors.site**
 
 ## Install
 
 ```bash
-npm install -g tree-cli
+npm install -g treef-cli
 ```
 
 ## Authentication
 
-Get your API key from your Tree profile page at https://tree.tabors.site/api/v1/user/:USERID/api-keys?html (replacing userId with your own) then:
+Get your API key from your Tree profile page at https://tree.tabors.site/api/v1/user/:USERID/api-keys?html (replacing :USERID with your own), then:
 
 ```bash
-tree login --key YOUR_API_KEY --user YOUR_USER_ID
+treef login --key YOUR_API_KEY
 ```
 
-## Usage
+## Quick Start
 
 ```bash
-# Check who you're logged in as
-tree whoami
+# Start the interactive shell
+treef start
 
-# List your root trees
-tree roots
-
-# Switch to a different root tree
-tree use "My Projects"
-
-# --- Navigation ---
-tree pwd                # print current path
-tree ls                 # list children of current node
-tree ls -l              # long format (ID + status)
-tree cd Projects        # navigate into a child node
-tree cd ..              # go up one level
-tree cd /               # jump back to root
-
-# --- Full tree view ---
-tree tree               # render the whole tree
-
-# --- Node management ---
-tree mkdir "New Node"   # create a child node here
-tree rm "Old Node" -f   # delete a node (soft delete, -f to confirm)
-tree rename "Old" "New" # rename a child node
-tree mv "Node" <destId> # move a node to a different parent
-tree status "Node" completed  # set status: active|completed|trimmed
-
-# --- Notes (like file contents) ---
-tree notes              # list notes on current node
-tree note "your idea"   # post a new note
-tree cat <noteId>       # view a note
-tree rm-note <noteId> -f  # delete a note
-
-# --- Values (key-value store on nodes) ---
-tree values             # list values on current node
-tree set revenue 42000  # set a value
-
-# --- AI ---
-tree chat "what's in this tree?"   # conversational AI on current tree
-tree place "flights cheaper March" # AI-place content (faster, no reply)
-
-# --- Root management ---
-tree mkroot "New Tree"  # create a new root tree
+# Or run commands directly
+treef roots
+treef use Life Plan
+treef ls
+treef cd Health
+treef tree
 ```
+
+## Commands
+
+### Getting Started
+
+| Command | Description |
+| ------- | ----------- |
+| `start` / `shell` | Start interactive shell |
+| `stop` / `exit` | Exit the shell |
+| `login --key <key>` | Authenticate with your API key |
+| `logout` | Clear stored credentials |
+| `whoami` | Show current login and active tree |
+
+### User Home (no tree required)
+
+| Command | Description |
+| ------- | ----------- |
+| `roots` | List all your root trees |
+| `use <name>` | Switch active root tree |
+| `mkroot <name>` | Create a new root tree |
+| `home` | Leave current tree, go back to user home |
+| `ideas` | List your raw ideas |
+| `idea <content>` | Create a new raw idea |
+| `rm-idea <id> -f` | Delete a raw idea |
+| `idea-place <id>` | AI-place a raw idea into the best tree |
+| `idea-transfer <id> <nodeId>` | Transfer a raw idea to a specific node |
+
+### Navigation (inside a tree)
+
+| Command | Description |
+| ------- | ----------- |
+| `pwd` | Print current path |
+| `ls` / `ls -l` | List children (long format shows IDs + status) |
+| `cd <name>` | Navigate into a child (supports `..` and `/`) |
+| `tree` | Render subtree from the node you are in |
+
+### Node Management
+
+| Command | Description |
+| ------- | ----------- |
+| `mkdir <name>` | Create a child node |
+| `rm <name> -f` | Delete a node (soft delete) |
+| `rename <name> <new>` | Rename a child node |
+| `mv <name> <destId>` | Move a node to a new parent |
+| `status <name> <status>` | Set status: active, completed, trimmed |
+
+### Notes & Values
+
+| Command | Description |
+| ------- | ----------- |
+| `notes` | List notes on the node you are in |
+| `note <content>` | Post a note |
+| `rm-note <id> -f` | Delete a note |
+| `values` | List key-value pairs |
+| `set <key> <value>` | Set a value |
+
+### AI
+
+| Command | Description |
+| ------- | ----------- |
+| `chat <message>` | Chat with AI about the branch you are in |
+| `place <message>` | AI-place content into the branch you are in |
+
+### Understanding Runs
+
+| Command | Description |
+| ------- | ----------- |
+| `understand [perspective]` | Start an understanding run from the node you are in |
+| `understandings` | List understanding runs |
+| `understand-status <runId>` | Check run progress |
+| `understand-stop <runId>` | Stop a running understanding run |
+
+## Name Matching
+
+All commands accept names or IDs. No quotes needed for multi-word names. Matching is fuzzy:
+
+1. Exact ID or ID prefix
+2. Exact name (case-insensitive)
+3. Name starts with your query
+4. Name contains your query
+
+If multiple matches are found, you'll be asked to disambiguate by ID.
 
 ## How It Works
 
-All commands map directly to the [Tree REST API](https://tree.tabors.site/about/api/). Your API key and current navigation state (which tree, which node path) are stored locally in `~/.tree-cli/config.json`.
-
-`cd` doesn't make an API call — it resolves the child node ID from the `ls` response and pushes it onto a local path stack. All other commands use the stack to know which node to operate on.
-
-## Command → Endpoint Map
-
-| Command  | Endpoint                            |
-| -------- | ----------------------------------- |
-| `ls`     | `GET /node/:nodeId/0`               |
-| `mkdir`  | `POST /node/:nodeId/createChild`    |
-| `rm`     | `POST /node/:nodeId/delete`         |
-| `mv`     | `POST /node/:nodeId/updateParent`   |
-| `rename` | `POST /node/:nodeId/0/editName`     |
-| `status` | `POST /node/:nodeId/0/editStatus`   |
-| `notes`  | `GET /node/:nodeId/0/notes`         |
-| `note`   | `POST /node/:nodeId/0/notes`        |
-| `cat`    | `GET /node/:nodeId/0/notes/:noteId` |
-| `values` | `GET /node/:nodeId/0/values`        |
-| `set`    | `POST /node/:nodeId/0/value`        |
-| `chat`   | `POST /root/:rootId/chat`           |
-| `place`  | `POST /root/:rootId/place`          |
-| `roots`  | `GET /user/:userId`                 |
-| `mkroot` | `POST /user/:userId/createRoot`     |
+All commands map to the [Tree REST API](https://tree.tabors.site/about/api/). Your API key and navigation state are stored in `~/.tree-cli/config.json`.

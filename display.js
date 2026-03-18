@@ -10,11 +10,13 @@ function printNode(node, indent = 0, isLast = true) {
       trimmed: chalk.dim,
     }[node.status] || chalk.white;
 
+  const nodeId = node._id || node.id || "";
   const name = statusColor(node.name || "unnamed");
-  const id = chalk.dim(`(${node._id})`);
+  const id = chalk.dim(`(${nodeId})`);
   console.log(prefix + name + "  " + id);
 
-  const children = node.children || [];
+  const d = node.data || node;
+  const children = d.children || node.children || [];
   children.forEach((child, i) => {
     printNode(child, indent + 1, i === children.length - 1);
   });
