@@ -10,7 +10,60 @@ const {
   currentNodeId,
   currentPath,
 } = require("./config");
-const { printNode, printTable, printNotes } = require("./display");
+const { printNode, printTable, printNotes, printContributions, printChats, printBook } = require("./display");
+
+/**
+ * Parse friendly date strings into ISO 8601.
+ * Accepts: "01/22/2025 5:45pm", "01/22/2025 17:45", "2025-01-22T17:45:00Z", etc.
+ */
+function parseDate(input) {
+  // Already ISO 8601
+  if (/^\d{4}-\d{2}-\d{2}T/.test(input)) return input;
+
+  // MM/DD/YYYY with optional time → defaults to midnight
+  const mDate = input.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})\s*(am|pm)?)?$/i,
+  );
+  if (mDate) {
+    const [, month, day, year, rawHour, min, ampm] = mDate;
+    let hour = rawHour ? parseInt(rawHour, 10) : 0;
+    const minute = min ? parseInt(min, 10) : 0;
+    if (ampm) {
+      const ap = ampm.toLowerCase();
+      if (ap === "pm" && hour < 12) hour += 12;
+      if (ap === "am" && hour === 12) hour = 0;
+    }
+    const d = new Date(
+      parseInt(year, 10),
+      parseInt(month, 10) - 1,
+      parseInt(day, 10),
+      hour,
+      minute,
+    );
+    return d.toISOString();
+  }
+
+  // Time only (e.g. "5:45pm", "17:45") → defaults to today
+  const mTime = input.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  if (mTime) {
+    const [, rawHour, min, ampm] = mTime;
+    let hour = parseInt(rawHour, 10);
+    const minute = parseInt(min, 10);
+    if (ampm) {
+      const ap = ampm.toLowerCase();
+      if (ap === "pm" && hour < 12) hour += 12;
+      if (ap === "am" && hour === 12) hour = 0;
+    }
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);
+    return d.toISOString();
+  }
+
+  // Fallback — let JS try to parse it
+  const d = new Date(input);
+  if (isNaN(d.getTime())) throw new Error(`Cannot parse date: "${input}"`);
+  return d.toISOString();
+}
 
 const program = new Command();
 
@@ -100,23 +153,23 @@ program
         },
         {
           title: "User Home (no tree required)",
-          cmds: ["roots", "use", "mkroot", "home", "ideas", "idea", "rm-idea", "idea-place", "idea-transfer"],
+          cmds: ["roots", "use", "mkroot", "home", "ideas", "idea", "rm-idea", "idea-place", "idea-transfer", "chats", "contributions"],
         },
         {
           title: "Navigation (inside a tree)",
-          cmds: ["pwd", "ls", "cd", "tree"],
+          cmds: ["pwd", "ls", "cd", "tree", "calendar", "dream-time"],
         },
         {
           title: "Node Management",
-          cmds: ["mkdir", "rm", "mv", "rename", "status"],
+          cmds: ["mkdir", "rm", "mv", "rename", "status", "schedule", "prestige"],
         },
         {
           title: "Notes & Values",
-          cmds: ["note", "notes", "rm-note", "values", "set"],
+          cmds: ["note", "notes", "rm-note", "book", "contributions", "values", "value", "goal"],
         },
         {
           title: "AI",
-          cmds: ["chat", "place"],
+          cmds: ["chat", "place", "query"],
         },
         {
           title: "Understanding Runs",
@@ -408,6 +461,60 @@ program
     }
   });
 
+program
+  .command("calendar")
+  .description("Show scheduled dates across the tree")
+  .option("-m, --month <month>", "Filter by month (0-11)")
+  .option("-y, --year <year>", "Filter by year")
+  .action(async ({ month, year }) => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const opts = {};
+      if (month != null) opts.month = month;
+      if (year) opts.year = year;
+      const data = await api.getCalendar(cfg.activeRootId, opts);
+      const events = data.calendar || data.events || data || [];
+      if (!Array.isArray(events) || !events.length)
+        return console.log(chalk.dim("  (no scheduled items)"));
+      events.forEach((e, i) => {
+        const date = e.schedule || e.date || e.scheduledDate || "";
+        const ts = date ? chalk.yellow(new Date(date).toLocaleString()) : "";
+        const name = e.name || e.nodeName || "";
+        const id = e._id || e.nodeId || "";
+        console.log(`  ${chalk.cyan(i + 1 + ".")} ${name}  ${ts}  ${chalk.dim(id)}`);
+      });
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("dream-time <time>")
+  .description("Set nightly dream scheduling time (HH:MM 24h format, or 'clear')")
+  .action(async (time) => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const dreamTime = time === "clear" ? null : time;
+      await api.setDreamTime(cfg.activeRootId, dreamTime);
+      if (dreamTime) {
+        const [h, m] = dreamTime.split(":").map(Number);
+        const ampm = h >= 12 ? "PM" : "AM";
+        const h12 = h % 12 || 12;
+        console.log(chalk.green(`✓ Dream time set to ${h12}:${String(m).padStart(2, "0")} ${ampm}`));
+      } else {
+        console.log(chalk.green("✓ Dream time cleared"));
+      }
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
 // ─────────────────────────────────────────────────────────────────────────────
 // NODE MANAGEMENT (mkdir, rm, mv, rename, status)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -499,7 +606,7 @@ program
       const target = findChild(children, oldName);
       if (!target) return;
 
-      await api.renameNode(target._id, 0, newName);
+      await api.renameNode(target._id, "latest", newName);
       console.log(chalk.green(`✓ Renamed "${oldName}" → "${newName}"`));
     } catch (e) {
       console.error(chalk.red(e.message));
@@ -525,8 +632,61 @@ program
       const target = findChild(children, name);
       if (!target) return;
 
-      await api.setStatus(target._id, 0, status);
+      await api.setStatus(target._id, "latest", status);
       console.log(chalk.green(`✓ Set "${name}" → ${status}`));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("schedule <args...>")
+  .description("Set schedule on the current node (e.g. 1/11/2025 3, 1/11/2025 11:45pm 5, or 'clear')")
+  .action(async (args) => {
+    const raw = args.join(" ");
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const nodeId = currentNodeId(cfg);
+      if (raw === "clear") {
+        await api.setSchedule(nodeId, "latest", null, 0);
+        return console.log(chalk.green("✓ Schedule cleared"));
+      }
+
+      // Last arg is reeffectTime if it's a plain integer (no "/" or ":")
+      let reeffect = 0;
+      const last = args[args.length - 1];
+      const dateParts = [...args];
+      if (/^\d+$/.test(last) && args.length > 1) {
+        reeffect = Number(dateParts.pop());
+      }
+
+      const schedule = parseDate(dateParts.join(" "));
+      await api.setSchedule(nodeId, "latest", schedule, reeffect);
+      console.log(
+        chalk.green(`✓ Scheduled for ${new Date(schedule).toLocaleString()}`) +
+          (reeffect ? chalk.dim(` (reeffect: ${reeffect}h)`) : ""),
+      );
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("prestige")
+  .description("Prestige the node you are in (create a new version)")
+  .action(async () => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const nodeId = currentNodeId(cfg);
+      const data = await api.prestige(nodeId);
+      const ver = data.version ?? data.newVersion ?? "";
+      console.log(chalk.green(`✓ Prestiged`) + (ver !== "" ? `  ${chalk.dim("version " + ver)}` : ""));
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -546,7 +706,7 @@ program
     const api = new TreeAPI(cfg.apiKey);
     try {
       const nodeId = currentNodeId(cfg);
-      const data = await api.createNote(nodeId, 0, content);
+      const data = await api.createNote(nodeId, "latest", content);
       console.log(
         chalk.green("✓ Note saved") + "  " + chalk.dim(data._id || ""),
       );
@@ -557,17 +717,23 @@ program
 
 program
   .command("notes")
-  .description("List notes on the node you are in")
+  .description("List notes (user notes at home, node notes in a tree)")
   .action(async () => {
     const cfg = requireAuth();
-    if (!cfg.activeRootId)
-      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
     const api = new TreeAPI(cfg.apiKey);
     try {
-      const nodeId = currentNodeId(cfg);
-      const data = await api.listNotes(nodeId, 0);
-      const notes = data.notes || data || [];
-      printNotes(Array.isArray(notes) ? notes : []);
+      if (!cfg.activeRootId) {
+        // Home mode — fetch user notes
+        const data = await api.listUserNotes(cfg.userId);
+        const notes = data.notes || data || [];
+        printNotes(Array.isArray(notes) ? notes : []);
+      } else {
+        // Tree mode — fetch node notes
+        const nodeId = currentNodeId(cfg);
+        const data = await api.listNotes(nodeId, "latest");
+        const notes = data.notes || data || [];
+        printNotes(Array.isArray(notes) ? notes : []);
+      }
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -588,8 +754,50 @@ program
     const api = new TreeAPI(cfg.apiKey);
     try {
       const nodeId = currentNodeId(cfg);
-      await api.deleteNote(nodeId, 0, noteId);
+      await api.deleteNote(nodeId, "latest", noteId);
       console.log(chalk.green("✓ Note deleted"));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("book")
+  .description("Print the full book of notes from the node you are in")
+  .action(async () => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const data = await api.getBook(cfg.activeRootId);
+      const book = data.book || data || {};
+      printBook(book);
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTRIBUTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+program
+  .command("contributions")
+  .description("List contributions (user at home, node in a tree)")
+  .action(async () => {
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      if (!cfg.activeRootId) {
+        const data = await api.listUserContributions(cfg.userId, { limit: 50 });
+        const items = data.contributions || data || [];
+        printContributions(Array.isArray(items) ? items : []);
+      } else {
+        const nodeId = currentNodeId(cfg);
+        const data = await api.listNodeContributions(nodeId, "latest", { limit: 50 });
+        const items = data.contributions || data || [];
+        printContributions(Array.isArray(items) ? items : []);
+      }
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -621,7 +829,7 @@ program
   });
 
 program
-  .command("set <key> <value>")
+  .command("value <key> <value>")
   .description("Set a value on the node you are in")
   .action(async (key, value) => {
     const cfg = requireAuth();
@@ -631,8 +839,45 @@ program
     try {
       const nodeId = currentNodeId(cfg);
       const parsed = isNaN(value) ? value : Number(value);
-      await api.setValue(nodeId, 0, key, parsed);
+      await api.setValue(nodeId, "latest", key, parsed);
       console.log(chalk.green(`✓ Set ${key} = ${parsed}`));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("goal <key> <goal>")
+  .description("Set a goal on the node you are in")
+  .action(async (key, goal) => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const nodeId = currentNodeId(cfg);
+      const parsed = isNaN(goal) ? goal : Number(goal);
+      await api.setGoal(nodeId, "latest", key, parsed);
+      console.log(chalk.green(`✓ Goal ${key} = ${parsed}`));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHATS
+// ─────────────────────────────────────────────────────────────────────────────
+program
+  .command("chats")
+  .description("List recent AI chat sessions")
+  .action(async () => {
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const data = await api.listUserChats(cfg.userId);
+      const sessions = data.chats || data.sessions || data || [];
+      const list = Array.isArray(sessions) ? sessions.slice(0, 10) : [];
+      printChats(list);
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -678,6 +923,27 @@ program
       if (data.targetPath)
         console.log(chalk.green(`✓ Placed under: ${data.targetPath}`));
       else console.log(chalk.green("✓ Placed"));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("query <message...>")
+  .description("Query AI about the branch you are in (read-only)")
+  .action(async (parts) => {
+    const message = parts.join(" ");
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    console.log(chalk.dim("Thinking…"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const nodeId = currentNodeId(cfg);
+      const data = await api.query(nodeId, message);
+      console.log(
+        chalk.bold("\nTree:") + " " + (data.answer || JSON.stringify(data)),
+      );
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -958,6 +1224,13 @@ const startShell = async () => {
         rl.close();
         return;
       }
+
+      // Reset all subcommand options so flags don't stick between invocations
+      program.commands.forEach((cmd) => {
+        cmd.options.forEach((opt) => {
+          cmd.setOptionValueWithSource(opt.attributeName(), opt.defaultValue, "default");
+        });
+      });
 
       // Re-dispatch through Commander as if the user typed "tree <input>"
       try {

@@ -47,6 +47,21 @@ class TreeAPI {
   getUser(userId) {
     return this.get(`/user/${userId}`);
   }
+  listUserNotes(userId, opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.limit) params.set("limit", opts.limit);
+    const qs = params.toString();
+    return this.get(`/user/${userId}/notes${qs ? "?" + qs : ""}`);
+  }
+  listUserContributions(userId, opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.limit) params.set("limit", opts.limit);
+    const qs = params.toString();
+    return this.get(`/user/${userId}/contributions${qs ? "?" + qs : ""}`);
+  }
+  listUserChats(userId) {
+    return this.get(`/user/${userId}/chats`);
+  }
 
   // ── Root ─────────────────────────────────────────────────────────────────
   getRoot(rootId) {
@@ -55,12 +70,22 @@ class TreeAPI {
   createRoot(userId, name) {
     return this.post(`/user/${userId}/createRoot`, { name });
   }
+  getCalendar(rootId, opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.month != null) params.set("month", opts.month);
+    if (opts.year) params.set("year", opts.year);
+    const qs = params.toString();
+    return this.get(`/root/${rootId}/calendar${qs ? "?" + qs : ""}`);
+  }
+  setDreamTime(rootId, dreamTime) {
+    return this.post(`/root/${rootId}/dream-time`, { dreamTime });
+  }
 
   // ── Node ─────────────────────────────────────────────────────────────────
   getNode(nodeId) {
     return this.get(`/node/${nodeId}`);
   }
-  getNodeVersion(nodeId, ver = 0) {
+  getNodeVersion(nodeId, ver = "latest") {
     return this.get(`/node/${nodeId}/${ver}`);
   }
   createChild(nodeId, name) {
@@ -78,10 +103,25 @@ class TreeAPI {
   setStatus(nodeId, ver, status) {
     return this.post(`/node/${nodeId}/${ver}/editStatus`, { status });
   }
+  prestige(nodeId, ver = "latest") {
+    return this.post(`/node/${nodeId}/${ver}/prestige`, {});
+  }
+  setSchedule(nodeId, ver, newSchedule, reeffectTime) {
+    const body = { newSchedule };
+    if (reeffectTime != null) body.reeffectTime = reeffectTime;
+    return this.post(`/node/${nodeId}/${ver}/editSchedule`, body);
+  }
 
   // ── Notes ─────────────────────────────────────────────────────────────────
-  listNotes(nodeId, ver = 0) {
+  listNotes(nodeId, ver = "latest") {
     return this.get(`/node/${nodeId}/${ver}/notes`);
+  }
+  // ── Contributions ───────────────────────────────────────────────────────
+  listNodeContributions(nodeId, ver = "latest", opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.limit) params.set("limit", opts.limit);
+    const qs = params.toString();
+    return this.get(`/node/${nodeId}/${ver}/contributions${qs ? "?" + qs : ""}`);
   }
   createNote(nodeId, ver, content) {
     return this.post(`/node/${nodeId}/${ver}/notes`, { content });
@@ -92,13 +132,19 @@ class TreeAPI {
   deleteNote(nodeId, ver, noteId) {
     return this.del(`/node/${nodeId}/${ver}/notes/${noteId}`);
   }
+  getBook(rootId) {
+    return this.get(`/root/${rootId}/book`);
+  }
 
   // ── Values ────────────────────────────────────────────────────────────────
-  getValues(nodeId, ver = 0) {
+  getValues(nodeId, ver = "latest") {
     return this.get(`/node/${nodeId}/${ver}/values`);
   }
   setValue(nodeId, ver, key, value) {
     return this.post(`/node/${nodeId}/${ver}/value`, { key, value });
+  }
+  setGoal(nodeId, ver, key, goal) {
+    return this.post(`/node/${nodeId}/${ver}/goal`, { key, goal });
   }
 
   // ── AI ────────────────────────────────────────────────────────────────────
@@ -107,6 +153,9 @@ class TreeAPI {
   }
   place(rootId, message) {
     return this.post(`/root/${rootId}/place`, { message });
+  }
+  query(rootId, message) {
+    return this.post(`/root/${rootId}/query`, { message });
   }
 
   // ── Raw Ideas ───────────────────────────────────────────────────────────────

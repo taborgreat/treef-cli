@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-const CONFIG_DIR = path.join(os.homedir(), ".tree-cli");
+const CONFIG_DIR = path.join(os.homedir(), ".treef-cli");
 const CONFIG_PATH = path.join(CONFIG_DIR, "config.json");
 
 const DEFAULT_CONFIG = {

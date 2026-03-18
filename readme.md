@@ -57,8 +57,11 @@ treef tree
 | `rm-idea <id> -f` | Delete a raw idea |
 | `idea-place <id>` | AI-place a raw idea into the best tree |
 | `idea-transfer <id> <nodeId>` | Transfer a raw idea to a specific node |
+| `notes` | List your user notes |
+| `chats` | List recent AI chat sessions |
+| `contributions` | List your recent contributions |
 
-### Navigation (inside a tree)
+### Tree Commands (inside a tree)
 
 | Command | Description |
 | ------- | ----------- |
@@ -66,38 +69,26 @@ treef tree
 | `ls` / `ls -l` | List children (long format shows IDs + status) |
 | `cd <name>` | Navigate into a child (supports `..` and `/`) |
 | `tree` | Render subtree from the node you are in |
-
-### Node Management
-
-| Command | Description |
-| ------- | ----------- |
+| `calendar` | Show scheduled dates across the tree |
+| `dream-time <HH:MM>` | Set nightly dream scheduling time (or 'clear') |
 | `mkdir <name>` | Create a child node |
 | `rm <name> -f` | Delete a node (soft delete) |
 | `rename <name> <new>` | Rename a child node |
 | `mv <name> <destId>` | Move a node to a new parent |
 | `status <name> <status>` | Set status: active, completed, trimmed |
-
-### Notes & Values
-
-| Command | Description |
-| ------- | ----------- |
+| `schedule <datetime> [reeffect]` | Set schedule (e.g. `1/11/2025 3`, `1/11/2025 11:45pm 5`, or 'clear') |
+| `prestige` | Prestige the current node (create a new version) |
 | `notes` | List notes on the node you are in |
 | `note <content>` | Post a note |
 | `rm-note <id> -f` | Delete a note |
+| `book` | Print the full book of notes from the current node |
+| `contributions` | List contributions for the current node |
 | `values` | List key-value pairs |
-| `set <key> <value>` | Set a value |
-
-### AI
-
-| Command | Description |
-| ------- | ----------- |
-| `chat <message>` | Chat with AI about the branch you are in |
-| `place <message>` | AI-place content into the branch you are in |
-
-### Understanding Runs
-
-| Command | Description |
-| ------- | ----------- |
+| `value <key> <value>` | Set a value |
+| `goal <key> <goal>` | Set a goal |
+| `chat <message>` | Chat with AI about the branch you are in (read and write) |
+| `place <message>` | AI-place content into the branch you are in (write) |
+| `query <message>` | Query AI about the branch you are in (read-only) |
 | `understand [perspective]` | Start an understanding run from the node you are in |
 | `understandings` | List understanding runs |
 | `understand-status <runId>` | Check run progress |
@@ -116,4 +107,4 @@ If multiple matches are found, you'll be asked to disambiguate by ID.
 
 ## How It Works
 
-All commands map to the [Tree REST API](https://tree.tabors.site/about/api/). Your API key and navigation state are stored in `~/.tree-cli/config.json`.
+All commands map to the [Tree REST API](https://tree.tabors.site/about/api/). Your API key and navigation state are stored in `~/.treef-cli/config.json`.
