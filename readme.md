@@ -12,6 +12,7 @@ A command-line interface for [Tree](https://tree.tabors.site) — navigate and m
 npm install -g treef-cli
 ```
 
+
 ## Authentication
 
 Get your API key from your [Tree profile page](https://tree.tabors.site), then:
@@ -91,6 +92,8 @@ Commands available once you are inside a tree.
 | `prestige` | Prestige the current node (create a new version) |
 
 ### Scheduling
+
+Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (default 0). Omit time for midnight. Omit date for today. Use `clear` to remove.
 
 | Command | Description |
 | --- | --- |
