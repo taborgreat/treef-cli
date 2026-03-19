@@ -448,7 +448,7 @@ program
                 : chalk.cyan;
           return color(c.name);
         });
-        console.log(names.join("  "));
+        console.log(names.join(chalk.dim("  ·  ")));
       }
     } catch (e) {
       console.error(chalk.red(e.message));
