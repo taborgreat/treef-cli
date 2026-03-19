@@ -177,7 +177,7 @@ program
         },
         {
           title: "Node Management",
-          cmds: ["mkdir", "rm", "mv", "rename", "status", "schedule", "prestige"],
+          cmds: ["mkdir", "rm", "mv", "rename", "complete", "activate", "trim", "schedule", "prestige"],
         },
         {
           title: "Notes & Values",
@@ -589,14 +589,21 @@ program
 program
   .command("tree")
   .description("Render the subtree from the node you are in")
-  .action(async () => {
+  .option("--active", "Show only active nodes")
+  .option("--completed", "Show only completed nodes")
+  .option("--trimmed", "Show only trimmed nodes")
+  .action(async (opts) => {
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
     const api = new TreeAPI(cfg.apiKey);
     try {
       const nodeId = currentNodeId(cfg);
-      const data = await api.getRoot(nodeId);
+      const filter = {};
+      if (opts.active) { filter.active = true; filter.completed = false; filter.trimmed = false; }
+      else if (opts.completed) { filter.active = false; filter.completed = true; filter.trimmed = false; }
+      else if (opts.trimmed) { filter.active = false; filter.completed = false; filter.trimmed = true; }
+      const data = await api.getRoot(nodeId, filter);
       const node = data.root || data;
       printNode(node);
     } catch (e) {
@@ -772,31 +779,24 @@ program
     }
   });
 
-program
-  .command("status <nameOrId> <status>")
-  .description("Set status on a child node (active|completed|trimmed)")
-  .action(async (name, status) => {
-    const cfg = requireAuth();
-    if (!cfg.activeRootId)
-      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
-    if (!["active", "completed", "trimmed"].includes(status))
-      return console.error(
-        chalk.red("Status must be: active | completed | trimmed"),
-      );
-    const api = new TreeAPI(cfg.apiKey);
-    try {
-      const nodeId = currentNodeId(cfg);
-      const data = await api.getNode(nodeId);
-      const children = getChildren(data);
-      const target = findChild(children, name);
-      if (!target) return;
-
-      await api.setStatus(target._id, "latest", status);
-      console.log(chalk.green(`✓ Set "${name}" → ${status}`));
-    } catch (e) {
-      console.error(chalk.red(e.message));
-    }
-  });
+for (const [cmd, stat] of [["complete", "completed"], ["activate", "active"], ["trim", "trimmed"]]) {
+  program
+    .command(cmd)
+    .description(`Set current node and all children to ${stat}`)
+    .action(async () => {
+      const cfg = requireAuth();
+      if (!cfg.activeRootId)
+        return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+      const api = new TreeAPI(cfg.apiKey);
+      try {
+        const nodeId = currentNodeId(cfg);
+        await api.setStatus(nodeId, "latest", stat);
+        console.log(chalk.green(`✓ ${stat} (recursive)`));
+      } catch (e) {
+        console.error(chalk.red(e.message));
+      }
+    });
+}
 
 program
   .command("schedule <args...>")

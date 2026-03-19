@@ -3,12 +3,13 @@ const chalk = require("chalk");
 function printNode(node, indent = 0, isLast = true) {
   const prefix =
     indent === 0 ? "" : "  ".repeat(indent - 1) + (isLast ? "└─ " : "├─ ");
+  const status = node.status || (node.versions && node.versions[node.prestige]?.status) || "active";
   const statusColor =
     {
       active: chalk.green,
       completed: chalk.gray,
       trimmed: chalk.dim,
-    }[node.status] || chalk.white;
+    }[status] || chalk.white;
 
   const nodeId = node._id || node.id || "";
   const name = statusColor(node.name || "unnamed");

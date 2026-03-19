@@ -120,7 +120,9 @@ Commands available once you are inside a tree.
 | `rm <name> -f`           | Delete a node (soft delete)                                             |
 | `rename <name> <new>`    | Rename a child node                                                     |
 | `mv <name> <destId>`     | Move a node to a new parent                                             |
-| `status <name> <status>` | Set status: `active`, `completed`, `trimmed`                            |
+| `complete`               | Set current node and all children to completed                                |
+| `activate`               | Set current node and all children to active                                   |
+| `trim`                   | Set current node and all children to trimmed                                  |
 | `prestige`               | Prestige the current node (create a new version)                        |
 
 ### Scheduling

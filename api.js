@@ -73,8 +73,13 @@ class TreeAPI {
   }
 
   // ── Root ─────────────────────────────────────────────────────────────────
-  getRoot(rootId) {
-    return this.get(`/root/${rootId}`);
+  getRoot(rootId, opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.active !== undefined) params.set("active", opts.active);
+    if (opts.completed !== undefined) params.set("completed", opts.completed);
+    if (opts.trimmed !== undefined) params.set("trimmed", opts.trimmed);
+    const qs = params.toString();
+    return this.get(`/root/${rootId}${qs ? "?" + qs : ""}`);
   }
   createRoot(userId, name) {
     return this.post(`/user/${userId}/createRoot`, { name });
@@ -110,7 +115,10 @@ class TreeAPI {
     return this.post(`/node/${nodeId}/delete`, {});
   }
   setStatus(nodeId, ver, status) {
-    return this.post(`/node/${nodeId}/${ver}/editStatus`, { status });
+    return this.post(`/node/${nodeId}/${ver}/editStatus`, {
+      status,
+      isInherited: true,
+    });
   }
   prestige(nodeId, ver = "latest") {
     return this.post(`/node/${nodeId}/${ver}/prestige`, {});
@@ -130,7 +138,9 @@ class TreeAPI {
     const params = new URLSearchParams();
     if (opts.limit) params.set("limit", opts.limit);
     const qs = params.toString();
-    return this.get(`/node/${nodeId}/${ver}/contributions${qs ? "?" + qs : ""}`);
+    return this.get(
+      `/node/${nodeId}/${ver}/contributions${qs ? "?" + qs : ""}`,
+    );
   }
   createNote(nodeId, ver, content) {
     return this.post(`/node/${nodeId}/${ver}/notes`, { content });
@@ -204,7 +214,9 @@ class TreeAPI {
     return this.post(`/user/${userId}/raw-ideas/auto-place`, { enabled });
   }
   transferRawIdea(userId, rawIdeaId, nodeId) {
-    return this.post(`/user/${userId}/raw-ideas/${rawIdeaId}/transfer`, { nodeId });
+    return this.post(`/user/${userId}/raw-ideas/${rawIdeaId}/transfer`, {
+      nodeId,
+    });
   }
 
   // ── Understandings ──────────────────────────────────────────────────────────
@@ -212,13 +224,19 @@ class TreeAPI {
     return this.get(`/root/${rootId}/understandings`);
   }
   createUnderstanding(rootId, perspective, incremental = false) {
-    return this.post(`/root/${rootId}/understandings`, { perspective, incremental });
+    return this.post(`/root/${rootId}/understandings`, {
+      perspective,
+      incremental,
+    });
   }
   getUnderstandingRun(rootId, runId) {
     return this.get(`/root/${rootId}/understandings/run/${runId}`);
   }
   orchestrateUnderstanding(rootId, runId) {
-    return this.post(`/root/${rootId}/understandings/run/${runId}/orchestrate`, {});
+    return this.post(
+      `/root/${rootId}/understandings/run/${runId}/orchestrate`,
+      {},
+    );
   }
   stopUnderstanding(rootId, runId) {
     return this.post(`/root/${rootId}/understandings/run/${runId}/stop`, {});
@@ -226,13 +244,17 @@ class TreeAPI {
 
   // ── Blog ─────────────────────────────────────────────────────────────────
   async listBlogPosts() {
-    const res = await fetch(BASE + "/blog/posts", { headers: { "Content-Type": "application/json" } });
+    const res = await fetch(BASE + "/blog/posts", {
+      headers: { "Content-Type": "application/json" },
+    });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
     return json;
   }
   async getBlogPost(slug) {
-    const res = await fetch(BASE + `/blog/posts/${slug}`, { headers: { "Content-Type": "application/json" } });
+    const res = await fetch(BASE + `/blog/posts/${slug}`, {
+      headers: { "Content-Type": "application/json" },
+    });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
     return json;
