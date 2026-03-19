@@ -28,14 +28,22 @@ treef start                # launch the interactive shell
 
 ```
 roots                      # list your trees
+
 root Life Plan             # switch into a tree
+
 ls                         # list children
+
 cd Health                  # navigate deeper
+
 tree                       # render the subtree
+
 chat went to doctor appointment today. told me to rest to recover my ankle
+
 place create a plan to workout 3 times a week
 chat i did the 20 pushups. what should i do now?
+
 understand tell me about my general physical and mental trends
+
 exit                       # leave the shell
 ```
 
