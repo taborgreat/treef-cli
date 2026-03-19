@@ -62,6 +62,12 @@ class TreeAPI {
   listUserChats(userId) {
     return this.get(`/user/${userId}/chats`);
   }
+  listNodeChats(nodeId) {
+    return this.get(`/node/${nodeId}/chats`);
+  }
+  listRootChats(rootId) {
+    return this.get(`/root/${rootId}/chats`);
+  }
 
   // ── Root ─────────────────────────────────────────────────────────────────
   getRoot(rootId) {
@@ -179,6 +185,18 @@ class TreeAPI {
   rawIdeaPlace(userId, rawIdeaId) {
     return this.post(`/user/${userId}/raw-ideas/${rawIdeaId}/place`, {});
   }
+  rawIdeaPlaceContent(userId, content) {
+    return this.post(`/user/${userId}/raw-ideas/place`, { content });
+  }
+  rawIdeaChat(userId, rawIdeaId) {
+    return this.post(`/user/${userId}/raw-ideas/${rawIdeaId}/chat`, {});
+  }
+  rawIdeaChatContent(userId, content) {
+    return this.post(`/user/${userId}/raw-ideas/chat`, { content });
+  }
+  rawIdeaAutoPlace(userId, enabled) {
+    return this.post(`/user/${userId}/raw-ideas/auto-place`, { enabled });
+  }
   transferRawIdea(userId, rawIdeaId, nodeId) {
     return this.post(`/user/${userId}/raw-ideas/${rawIdeaId}/transfer`, { nodeId });
   }
@@ -198,6 +216,20 @@ class TreeAPI {
   }
   stopUnderstanding(rootId, runId) {
     return this.post(`/root/${rootId}/understandings/run/${runId}/stop`, {});
+  }
+
+  // ── Blog ─────────────────────────────────────────────────────────────────
+  async listBlogPosts() {
+    const res = await fetch(BASE + "/blog/posts", { headers: { "Content-Type": "application/json" } });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+    return json;
+  }
+  async getBlogPost(slug) {
+    const res = await fetch(BASE + `/blog/posts/${slug}`, { headers: { "Content-Type": "application/json" } });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+    return json;
   }
 }
 

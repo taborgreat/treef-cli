@@ -56,15 +56,18 @@ Commands available without entering a tree.
 | --- | --- |
 | `roots` | List all your root trees |
 | `use <name>` | Switch active root tree |
+| `root <name>` | Switch active root tree (alias for use) |
 | `mkroot <name>` | Create a new root tree |
 | `home` | Leave current tree, return to user home |
-| `ideas` | List your raw ideas |
-| `idea <content>` | Create a new raw idea |
+| `ideas` | List pending/stuck/processing ideas. `--done` = succeeded, `--all` = everything, `-s <status>` = exact filter |
+| `idea <message>` | Send an idea, get an AI response, and auto-navigate to where it was placed |
+| `idea-store <content>` | Save a raw idea for later without processing |
 | `rm-idea <id> -f` | Delete a raw idea |
-| `idea-place <id>` | AI-place a raw idea into the best tree |
+| `idea-place <id or text>` | AI-place an idea (fire-and-forget). Pass a raw idea ID or type content directly |
+| `idea-auto [on\|off]` | Toggle automatic placement of pending raw ideas every 15 min (Standard plan+). No arg = show current status |
 | `idea-transfer <id> <nodeId>` | Transfer a raw idea to a specific node |
 | `notes` | List your user-level notes |
-| `chats` | List recent AI chat sessions |
+| `chats` | In home: your profile chats. In tree: current node's chats |
 | `contributions` | List your recent contributions |
 
 ---
@@ -84,7 +87,7 @@ Commands available once you are inside a tree.
 
 | Command | Description |
 | --- | --- |
-| `mkdir <name>` | Create a child node |
+| `mkdir <name>` | Create a child node. Comma-separate for multiple: `mkdir foo, bar, baz` |
 | `rm <name> -f` | Delete a node (soft delete) |
 | `rename <name> <new>` | Rename a child node |
 | `mv <name> <destId>` | Move a node to a new parent |
@@ -118,7 +121,8 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 
 | Command | Description |
 | --- | --- |
-| `chat <message>` | Chat with AI about the current branch (read and write) |
+| `chat <message>` | Chat with AI about the current node/branch |
+| `chats` | Node chats (current node). `chats tree` = all chats across the whole tree |
 | `place <message>` | AI-place content into the current branch (write) |
 | `query <message>` | Query AI about the current branch (read-only) |
 
@@ -130,6 +134,15 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 | `understandings` | List understanding runs |
 | `understand-status <runId>` | Check run progress |
 | `understand-stop <runId>` | Stop a running understanding run |
+
+### Blog
+
+Posts from the Tree creator — updates, ideas, and what's coming next. No login required.
+
+| Command | Description |
+| --- | --- |
+| `blogs` | List all published blog posts with summaries |
+| `blog <slug or number>` | Read a post by slug (`blog why-i-built-tree`) or list number (`blog 1`) |
 
 ---
 

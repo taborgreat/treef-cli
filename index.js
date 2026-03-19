@@ -153,7 +153,7 @@ program
         },
         {
           title: "User Home (no tree required)",
-          cmds: ["roots", "use", "mkroot", "home", "ideas", "idea", "rm-idea", "idea-place", "idea-transfer", "chats", "contributions"],
+          cmds: ["roots", "use", "root", "mkroot", "home", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions"],
         },
         {
           title: "Navigation (inside a tree)",
@@ -169,11 +169,15 @@ program
         },
         {
           title: "AI",
-          cmds: ["chat", "place", "query"],
+          cmds: ["chat", "chats", "place", "query"],
         },
         {
           title: "Understanding Runs",
           cmds: ["understand", "understandings", "understand-status", "understand-stop"],
+        },
+        {
+          title: "Blog",
+          cmds: ["blogs", "blog"],
         },
       ];
 
@@ -183,12 +187,22 @@ program
       });
 
       let out = `Usage: ${helper.commandUsage(cmd)}\n\n`;
-      out += `${cmd.description()}\n`;
-      out += `https://tree.tabors.site\n\n`;
+      out += `What is Tree?\n`;
+      out += `  A living structure for everything you're building, thinking, and tracking.\n`;
+      out += `  Organize knowledge into trees of nodes, each with history, AI context,\n`;
+      out += `  goals, and values. Navigate and manage your trees from the terminal.\n\n`;
+      out += `  https://tree.tabors.site/about\n\n`;
+      out += `  Docs:\n`;
+      out += `    Getting Started    https://tree.tabors.site/about/gettingstarted\n`;
+      out += `    Raw Ideas          https://tree.tabors.site/about/raw-ideas\n`;
+      out += `    Energy System      https://tree.tabors.site/about/energy\n`;
+      out += `    Tree Dreams        https://tree.tabors.site/about/dreams\n`;
+      out += `    CLI                https://tree.tabors.site/about/cli\n`;
+      out += `    Gateway            https://tree.tabors.site/about/gateway\n`;
+      out += `    API Reference      https://tree.tabors.site/about/api\n`;
+      out += `    Blog               https://tree.tabors.site/blog\n\n`;
 
-      const pad = 40;
       const fmtUsage = (c) => {
-        // Strip [options] from usage for cleaner output
         return (c.name() + " " + c.usage()).replace(/ \[options\]/g, "").trim();
       };
 
@@ -197,8 +211,8 @@ program
         for (const name of section.cmds) {
           const c = cmdMap[name];
           if (!c) continue;
-          const usage = fmtUsage(c);
-          out += `  ${usage.padEnd(pad)}${c.description()}\n`;
+          out += `  ${fmtUsage(c)}\n`;
+          out += `      ${c.description()}\n`;
           delete cmdMap[name];
         }
         out += "\n";
@@ -209,8 +223,8 @@ program
       if (remaining.length) {
         out += "Other:\n";
         for (const c of remaining) {
-          const usage = fmtUsage(c);
-          out += `  ${usage.padEnd(pad)}${c.description()}\n`;
+          out += `  ${fmtUsage(c)}\n`;
+          out += `      ${c.description()}\n`;
         }
         out += "\n";
       }
@@ -298,6 +312,28 @@ program
 program
   .command("use <nameOrId...>")
   .description("Switch active root tree by name or ID")
+  .action(async (parts) => {
+    const nameOrId = parts.join(" ");
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const data = await api.getUser(cfg.userId);
+      const roots = data.roots || data.user?.roots || [];
+      const root = findChild(roots, nameOrId);
+      if (!root) return;
+      cfg.activeRootId = root._id;
+      cfg.activeRootName = root.name;
+      cfg.pathStack = [];
+      save(cfg);
+      console.log(chalk.green(`✓ Switched to "${root.name}"`));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("root <nameOrId...>")
+  .description("Switch active root tree by name or ID (alias for use)")
   .action(async (parts) => {
     const nameOrId = parts.join(" ");
     const cfg = requireAuth();
@@ -520,18 +556,21 @@ program
 // ─────────────────────────────────────────────────────────────────────────────
 program
   .command("mkdir <name...>")
-  .description("Create a child under the node you are in")
+  .description("Create child node(s). Comma-separate for multiple: mkdir foo, bar, baz")
   .action(async (parts) => {
-    const name = parts.join(" ");
+    const raw = parts.join(" ");
+    const names = raw.split(",").map(n => n.trim()).filter(Boolean);
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
     const api = new TreeAPI(cfg.apiKey);
     try {
       const nodeId = currentNodeId(cfg);
-      const data = await api.createChild(nodeId, name);
-      const id = data.node?._id || data._id || "";
-      console.log(chalk.green(`✓ Created "${name}"`) + "  " + chalk.dim(id));
+      for (const name of names) {
+        const data = await api.createChild(nodeId, name);
+        const id = data.node?._id || data._id || "";
+        console.log(chalk.green(`✓ Created "${name}"`) + "  " + chalk.dim(id));
+      }
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -865,16 +904,99 @@ program
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BLOG
+// ─────────────────────────────────────────────────────────────────────────────
+program
+  .command("blogs")
+  .description("List creator blog posts — updates and news about Tree")
+  .action(async () => {
+    const api = new TreeAPI("");
+    try {
+      const data = await api.listBlogPosts();
+      const posts = data.posts || [];
+      if (!posts.length) return console.log(chalk.dim("  (no posts)"));
+      posts.forEach((p, i) => {
+        const date = p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "";
+        console.log(`  ${chalk.cyan(i + 1 + ".")} ${chalk.bold(p.title)}`);
+        console.log(`      ${chalk.dim((p.authorName || "") + (date ? " · " + date : ""))}`);
+        if (p.summary) console.log(`      ${chalk.dim(p.summary)}`);
+        console.log();
+      });
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("blog <slugOrNumber...>")
+  .description("Read a blog post by slug or list number")
+  .action(async (parts) => {
+    const input = parts.join("-");
+    const api = new TreeAPI("");
+    try {
+      let slug = input;
+      // If numeric — resolve by index from list
+      if (/^\d+$/.test(input)) {
+        const data = await api.listBlogPosts();
+        const posts = data.posts || [];
+        const idx = parseInt(input, 10) - 1;
+        if (!posts[idx]) return console.log(chalk.red(`No post at index ${input}`));
+        slug = posts[idx].slug;
+      }
+      let postData;
+      try {
+        postData = await api.getBlogPost(slug);
+      } catch (_) {
+        // Slug not found — try fuzzy match
+        const list = await api.listBlogPosts();
+        const match = (list.posts || []).find(p =>
+          p.title.toLowerCase().includes(input.toLowerCase()) ||
+          p.slug.includes(input.toLowerCase())
+        );
+        if (!match) return console.log(chalk.red(`No post found for "${input}"`));
+        postData = await api.getBlogPost(match.slug);
+      }
+      const post = postData.post;
+      const date = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : "";
+      console.log(chalk.bold("\n" + post.title));
+      console.log(chalk.dim((post.authorName || "") + (date ? " · " + date : "")) + "\n");
+      if (post.summary) console.log(chalk.dim(post.summary) + "\n");
+      if (post.content) {
+        const text = post.content
+          .replace(/<[^>]+>/g, "")
+          .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+          .replace(/&nbsp;/g, " ").replace(/&#39;/g, "'").replace(/&quot;/g, '"')
+          .trim();
+        console.log(text);
+      }
+      console.log();
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CHATS
 // ─────────────────────────────────────────────────────────────────────────────
 program
-  .command("chats")
-  .description("List recent AI chat sessions")
-  .action(async () => {
+  .command("chats [scope]")
+  .description("List AI chats. In home: your profile chats. In tree: node chats. 'chats tree' = all chats across the whole tree")
+  .action(async (scope) => {
     const cfg = requireAuth();
     const api = new TreeAPI(cfg.apiKey);
     try {
-      const data = await api.listUserChats(cfg.userId);
+      let data;
+      if (!cfg.activeRootId) {
+        // Home mode — user profile chats
+        data = await api.listUserChats(cfg.userId);
+      } else if (scope === "tree" || scope === "all") {
+        // All chats across the whole tree
+        data = await api.listRootChats(cfg.activeRootId);
+      } else {
+        // Current node chats
+        const nodeId = currentNodeId(cfg);
+        data = await api.listNodeChats(nodeId);
+      }
       const sessions = data.chats || data.sessions || data || [];
       const list = Array.isArray(sessions) ? sessions.slice(0, 10) : [];
       printChats(list);
@@ -954,23 +1076,54 @@ program
 // ─────────────────────────────────────────────────────────────────────────────
 program
   .command("ideas")
-  .description("List your raw ideas")
-  .option("-s, --status <status>", "Filter by status")
+  .description("List raw ideas (pending/stuck/processing by default)")
+  .option("--pending", "Show pending ideas")
+  .option("--processing", "Show processing ideas")
+  .option("--stuck", "Show stuck ideas")
+  .option("--done", "Show succeeded ideas")
+  .option("--all", "Show all ideas regardless of status")
+  .option("-s, --status <status>", "Filter by exact status (pending|processing|succeeded|stuck|deleted)")
   .option("-q, --query <query>", "Search raw ideas")
   .option("-l, --limit <n>", "Limit results")
-  .action(async ({ status, query, limit }) => {
+  .action(async ({ pending, processing, stuck, done, all, status, query, limit }) => {
     const cfg = requireAuth();
     const api = new TreeAPI(cfg.apiKey);
     try {
-      const data = await api.listRawIdeas(cfg.userId, { status, q: query, limit });
-      const ideas = data.rawIdeas || data.ideas || data || [];
+      // Build the set of statuses to show
+      const flaggedStatuses = [
+        pending && "pending",
+        processing && "processing",
+        stuck && "stuck",
+        done && "succeeded",
+      ].filter(Boolean);
+
+      // Fetch from API — always use "all" when stacking or using shorthand flags so we filter client-side
+      const apiStatus = status || (flaggedStatuses.length || all ? "all" : "all");
+      const data = await api.listRawIdeas(cfg.userId, { status: apiStatus, q: query, limit });
+      let ideas = data.rawIdeas || data.ideas || data || [];
+
+      if (status) {
+        // explicit -s flag: trust the API filter
+      } else if (flaggedStatuses.length) {
+        ideas = ideas.filter(r => flaggedStatuses.includes(r.status));
+      } else if (!all) {
+        // Default view: pending, stuck, processing, failed
+        ideas = ideas.filter(r => ["pending", "stuck", "processing", "failed"].includes(r.status));
+      }
+
       if (!Array.isArray(ideas) || !ideas.length)
-        return console.log(chalk.dim("  (no raw ideas)"));
+        return console.log(chalk.dim("  (no ideas)"));
+
+      const statusColor = (s) => {
+        if (s === "succeeded") return chalk.green(`[${s}]`);
+        if (s === "processing") return chalk.blue(`[${s}]`);
+        if (s === "stuck" || s === "failed") return chalk.red(`[${s}]`);
+        return chalk.yellow(`[${s}]`);
+      };
+
       ideas.forEach((idea, i) => {
-        const ts = idea.createdAt
-          ? chalk.dim(new Date(idea.createdAt).toLocaleString())
-          : "";
-        const st = idea.status ? chalk.yellow(` [${idea.status}]`) : "";
+        const ts = idea.createdAt ? chalk.dim(new Date(idea.createdAt).toLocaleString()) : "";
+        const st = idea.status ? " " + statusColor(idea.status) : "";
         console.log(`  ${chalk.cyan(i + 1 + ".")} ${chalk.dim(idea._id)}${st}  ${ts}`);
         if (idea.content) console.log(`     ${idea.content.slice(0, 120)}`);
       });
@@ -980,8 +1133,8 @@ program
   });
 
 program
-  .command("idea <content...>")
-  .description("Create a new raw idea")
+  .command("idea-store <content...>")
+  .description("Save a raw idea for later without processing")
   .action(async (parts) => {
     const content = parts.join(" ");
     const cfg = requireAuth();
@@ -1013,16 +1166,60 @@ program
   });
 
 program
-  .command("idea-place <rawIdeaId>")
-  .description("AI-place a raw idea into the best tree and node")
-  .action(async (rawIdeaId) => {
+  .command("idea-place <input...>")
+  .description("AI-place an idea (fire-and-forget). Pass a rawIdeaId or just type your idea directly")
+  .action(async (parts) => {
+    const input = parts.join(" ");
     const cfg = requireAuth();
     console.log(chalk.dim("Placing…"));
     const api = new TreeAPI(cfg.apiKey);
     try {
-      const data = await api.rawIdeaPlace(cfg.userId, rawIdeaId);
-      console.log(chalk.green("✓ Orchestration started"));
-      if (data.message) console.log(chalk.dim(`  ${data.message}`));
+      // UUID pattern — treat as existing raw idea ID
+      const isId = /^[0-9a-f-]{36}$/i.test(input);
+      const data = isId
+        ? await api.rawIdeaPlace(cfg.userId, input)
+        : await api.rawIdeaPlaceContent(cfg.userId, input);
+      console.log(chalk.green("✓ Placement started (background)"));
+      if (data.rawIdeaId) console.log(chalk.dim(`  Raw idea: ${data.rawIdeaId}`));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("idea <message...>")
+  .description("Send an idea from anywhere — AI places it in the right tree and navigates you there")
+  .action(async (parts) => {
+    const input = parts.join(" ");
+    const cfg = requireAuth();
+    console.log(chalk.dim("Thinking…"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      // UUID pattern — treat as existing raw idea ID
+      const isId = /^[0-9a-f-]{36}$/i.test(input);
+      const data = isId
+        ? await api.rawIdeaChat(cfg.userId, input)
+        : await api.rawIdeaChatContent(cfg.userId, input);
+      if (!data.success) return console.log(chalk.red(data.error || "Failed"));
+      console.log(chalk.bold("\nAnswer:\n") + (data.answer || ""));
+      if (data.rootName) console.log(chalk.dim(`\nPlaced in tree: ${data.rootName}`));
+      if (data.targetNodeId && data.rootId) {
+        cfg.activeRootId = data.rootId;
+        cfg.activeRootName = data.rootName || data.rootId;
+        if (data.targetNodePath && data.targetNodePath.length) {
+          cfg.pathStack = data.targetNodePath.map(n => ({ id: n._id, name: n.name }));
+        } else if (data.targetNodeName) {
+          cfg.pathStack = [{ id: data.targetNodeId, name: data.targetNodeName }];
+        } else {
+          // No name available — skip navigation to avoid showing raw UUID in path
+          save(cfg);
+          console.log(chalk.green(`✓ Placed in tree: ${data.rootName || data.rootId}`));
+          return;
+        }
+        save(cfg);
+        const pathStr = cfg.pathStack.map(n => n.name).join("/");
+        console.log(chalk.green(`✓ Navigated to ${data.rootName || data.rootId} › ${pathStr}`));
+      }
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -1042,12 +1239,34 @@ program
     }
   });
 
+program
+  .command("idea-auto [toggle]")
+  .description("Toggle auto-placement of pending raw ideas every 15 min (on/off). Requires Standard plan+")
+  .action(async (toggle) => {
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      if (!toggle) {
+        // No arg — fetch current user to show status
+        const data = await api.getUser(cfg.userId);
+        const enabled = data.user?.autoPlaceIdeas ?? data.autoPlaceIdeas;
+        console.log(`Auto-placement: ${enabled ? chalk.green("on") : chalk.dim("off")}`);
+        return;
+      }
+      const enabled = toggle === "on" || toggle === "true" || toggle === "1";
+      const data = await api.rawIdeaAutoPlace(cfg.userId, enabled);
+      console.log(`Auto-placement: ${data.enabled ? chalk.green("on") : chalk.dim("off")}`);
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
 // ─────────────────────────────────────────────────────────────────────────────
 // UNDERSTANDING RUNS (requires active tree)
 // ─────────────────────────────────────────────────────────────────────────────
 program
   .command("understand [perspective...]")
-  .description("Start an understanding run from the node you are in")
+  .description("Start an understanding run from the node you are in. Waits and returns the final encoding when complete")
   .option("-i, --incremental", "Only process new/changed nodes")
   .action(async (parts, { incremental }) => {
     const perspective = parts.length ? parts.join(" ") : "";
@@ -1073,11 +1292,13 @@ program
 
       // Auto-orchestrate the run
       if (runId) {
-        console.log(chalk.dim("Orchestrating…"));
+        console.log(chalk.dim("Orchestrating… (this may take a while)"));
         const orch = await api.orchestrateUnderstanding(nodeId, runId);
-        console.log(chalk.green("✓ Orchestration started"));
+        console.log(chalk.green("✓ Orchestration complete"));
         if (orch.nodesProcessed != null)
           console.log(chalk.dim(`  Nodes processed: ${orch.nodesProcessed}`));
+        if (orch.rootEncoding)
+          console.log(chalk.bold("\nEncoding:\n") + orch.rootEncoding);
       }
     } catch (e) {
       console.error(chalk.red(e.message));
