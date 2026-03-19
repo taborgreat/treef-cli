@@ -1,6 +1,6 @@
 {
   "name": "treef-cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "CLI for Tree — navigate and manage your nodes like a filesystem",
   "main": "index.js",
   "bin": {
