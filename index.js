@@ -1381,9 +1381,12 @@ program
       if (!id) return console.log(chalk.yellow("Usage: link note <noteId>"));
       const nodeId = currentNodeId(cfg);
       url = `${BASE}/api/v1/node/${nodeId}/latest/notes/${id}/editor${qs}`;
+    } else if (type === "gateway") {
+      if (!cfg.activeRootId) return console.log(chalk.yellow("Enter a tree first."));
+      url = `${BASE}/api/v1/root/${cfg.activeRootId}/gateway${qs}`;
     } else {
       if (cfg.activeRootId) {
-        return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link root, link book, link note <id>`));
+        return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link root, link book, link gateway, link note <id>`));
       }
       return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link ideas, link idea <id>, link note <id>`));
     }

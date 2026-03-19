@@ -96,7 +96,6 @@ Commands available without entering a tree.
 | `chats`                       | In home: all AI chats across all your trees. In tree: current node's chats                                          |
 | `contributions`               | List your recent contributions                                                                                      |
 | `share-token [token]`         | Show your share token, or set a new one (`share-token <token>`)                                                     |
-| `link [type] [id]`            | Clickable link to your current location (uses share token). `link root`, `link book`, `link ideas`, `link idea <id>`, `link note <id>` |
 | `share idea <id>`             | Public link to a raw idea (no token required)                                                                       |
 
 ---
@@ -124,8 +123,6 @@ Commands available once you are inside a tree.
 | `activate`               | Set current node and all children to active                                   |
 | `trim`                   | Set current node and all children to trimmed                                  |
 | `prestige`               | Prestige the current node (create a new version)                        |
-| `share note <id>`        | Public link to a note on the current node (no token required)           |
-| `share book`             | Generate a public book share link from current node (TOC included)      |
 
 ### Scheduling
 
@@ -160,6 +157,26 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 | `invite deny <id>`             | Decline a pending invite                                                 |
 | `kick <username or userId>`    | Remove a contributor from the current tree                               |
 | `owner <username or userId>`   | Transfer tree ownership to another contributor                           |
+
+### Links & Sharing (in a tree)
+
+| Command              | Description                                                         |
+| -------------------- | ------------------------------------------------------------------- |
+| `link`               | Clickable link to your current node (uses share token)              |
+| `link root`          | Link to the tree root                                               |
+| `link book`          | Link to the book view                                               |
+| `link gateway`       | Link to the gateway channels for the tree                           |
+| `link note <id>`     | Link to a specific note                                             |
+| `share note <id>`    | Public link to a note (no token required)                           |
+| `share book`         | Generate a public book share link from current node (TOC included)  |
+
+**From home:**
+
+| Command              | Description                                                         |
+| -------------------- | ------------------------------------------------------------------- |
+| `link`               | Link to your user profile                                           |
+| `link ideas`         | Link to your raw ideas                                              |
+| `link idea <id>`     | Link to a specific raw idea                                         |
 
 ### AI
 
