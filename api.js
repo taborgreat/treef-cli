@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 
-const BASE = "https://tree.tabors.site/api/v1";
+const BASE_SITE = "https://tree.tabors.site";
+const BASE = BASE_SITE + "/api/v1";
 
 class TreeAPI {
   constructor(apiKey) {
@@ -53,6 +54,7 @@ class TreeAPI {
   listUserNotes(userId, opts = {}) {
     const params = new URLSearchParams();
     if (opts.limit) params.set("limit", opts.limit);
+    if (opts.q) params.set("q", opts.q);
     const qs = params.toString();
     return this.get(`/user/${userId}/notes${qs ? "?" + qs : ""}`);
   }
@@ -151,8 +153,12 @@ class TreeAPI {
   }
 
   // ── Notes ─────────────────────────────────────────────────────────────────
-  listNotes(nodeId, ver = "latest") {
-    return this.get(`/node/${nodeId}/${ver}/notes`);
+  listNotes(nodeId, ver = "latest", opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.limit) params.set("limit", opts.limit);
+    if (opts.q) params.set("q", opts.q);
+    const qs = params.toString();
+    return this.get(`/node/${nodeId}/${ver}/notes${qs ? "?" + qs : ""}`);
   }
   // ── Contributions ───────────────────────────────────────────────────────
   listNodeContributions(nodeId, ver = "latest", opts = {}) {
@@ -286,3 +292,4 @@ class TreeAPI {
 }
 
 module.exports = TreeAPI;
+module.exports.BASE_SITE = BASE_SITE;

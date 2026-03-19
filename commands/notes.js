@@ -28,20 +28,22 @@ module.exports = (program) => {
   program
     .command("notes")
     .description("List notes (user notes at home, node notes in a tree)")
-    .action(async () => {
+    .option("-l, --limit [n]", "Limit results")
+    .option("-q, --query [query]", "Search notes")
+    .action(async ({ limit, query }) => {
       const cfg = requireAuth();
       const api = new TreeAPI(cfg.apiKey);
       try {
+        let notes;
         if (!cfg.activeRootId) {
-          const data = await api.listUserNotes(cfg.userId);
-          const notes = data.notes || data || [];
-          printNotes(Array.isArray(notes) ? notes : []);
+          const data = await api.listUserNotes(cfg.userId, { limit, q: query });
+          notes = data.notes || data || [];
         } else {
           const nodeId = currentNodeId(cfg);
-          const data = await api.listNotes(nodeId, "latest");
-          const notes = data.notes || data || [];
-          printNotes(Array.isArray(notes) ? notes : []);
+          const data = await api.listNotes(nodeId, "latest", { limit, q: query });
+          notes = data.notes || data || [];
         }
+        printNotes(Array.isArray(notes) ? notes : []);
       } catch (e) {
         console.error(chalk.red(e.message));
       }
@@ -217,6 +219,62 @@ module.exports = (program) => {
         const parsed = isNaN(goal) ? goal : Number(goal);
         await api.setGoal(nodeId, "latest", key, parsed);
         console.log(chalk.green(`✓ Goal ${key} = ${parsed}`));
+      } catch (e) {
+        console.error(chalk.red(e.message));
+      }
+    });
+
+  program
+    .command("cat [type] [idOrNumber...]")
+    .description("View full content: cat note <id/#>, cat idea <id/#>")
+    .action(async (type, parts) => {
+      if (!type || !parts?.length)
+        return console.log(chalk.yellow("Usage: cat note <id or #>, cat idea <id or #>"));
+      const input = parts.join(" ");
+      const cfg = requireAuth();
+      const api = new TreeAPI(cfg.apiKey);
+      try {
+        if (type === "idea") {
+          const num = parseInt(input, 10);
+          let idea;
+          if (!isNaN(num) && num > 0 && !/^[0-9a-f-]{8,}$/i.test(input)) {
+            const data = await api.listRawIdeas(cfg.userId, { status: "all" });
+            const ideas = data.rawIdeas || data.ideas || data || [];
+            idea = ideas[num - 1];
+            if (!idea) return console.log(chalk.yellow(`No idea at position ${num}`));
+          } else {
+            const data = await api.getRawIdea(cfg.userId, input);
+            idea = data.rawIdea || data;
+          }
+          console.log(chalk.bold("Idea") + "  " + chalk.dim(idea._id || input));
+          if (idea.createdAt) console.log(chalk.dim(new Date(idea.createdAt).toLocaleString()));
+          if (idea.status) console.log(chalk.yellow(`[${idea.status}]`));
+          console.log("\n" + (idea.content || "(empty)"));
+        } else if (type === "note") {
+          const num = parseInt(input, 10);
+          let notes;
+          if (!cfg.activeRootId) {
+            const data = await api.listUserNotes(cfg.userId);
+            notes = data.notes || data || [];
+          } else {
+            const nodeId = currentNodeId(cfg);
+            const data = await api.listNotes(nodeId, "latest");
+            notes = data.notes || data || [];
+          }
+          let note;
+          if (!isNaN(num) && num > 0 && !/^[0-9a-f-]{8,}$/i.test(input)) {
+            note = notes[num - 1];
+            if (!note) return console.log(chalk.yellow(`No note at position ${num}`));
+          } else {
+            note = notes.find(n => n._id === input || n._id.startsWith(input));
+            if (!note) return console.log(chalk.yellow(`No note matching "${input}"`));
+          }
+          console.log(chalk.bold("Note") + "  " + chalk.dim(note._id || ""));
+          if (note.createdAt) console.log(chalk.dim(new Date(note.createdAt).toLocaleString()));
+          console.log("\n" + (note.content || "(empty)"));
+        } else {
+          console.log(chalk.yellow("Usage: cat note <id or #>, cat idea <id or #>"));
+        }
       } catch (e) {
         console.error(chalk.red(e.message));
       }

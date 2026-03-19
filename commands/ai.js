@@ -7,7 +7,8 @@ module.exports = (program) => {
   program
     .command("chats [scope]")
     .description("List AI chats. In home: your profile chats. In tree: node chats. 'chats tree' = all chats across the whole tree")
-    .action(async (scope) => {
+    .option("-l, --limit [n]", "Limit results")
+    .action(async (scope, { limit }) => {
       const cfg = requireAuth();
       const api = new TreeAPI(cfg.apiKey);
       try {
@@ -21,7 +22,8 @@ module.exports = (program) => {
           data = await api.listNodeChats(nodeId);
         }
         const sessions = data.chats || data.sessions || data || [];
-        const list = Array.isArray(sessions) ? sessions.slice(0, 10) : [];
+        const max = parseInt(limit, 10) || 10;
+        const list = Array.isArray(sessions) ? sessions.slice(0, max) : [];
         printChats(list);
       } catch (e) {
         console.error(chalk.red(e.message));
@@ -97,13 +99,13 @@ module.exports = (program) => {
   program
     .command("ideas")
     .description("List raw ideas (pending/stuck/processing by default). Stack flags to combine: --stuck --done")
-    .option("--pending", "Show pending ideas")
-    .option("--processing", "Show processing ideas")
-    .option("--stuck", "Show stuck ideas")
-    .option("--done", "Show succeeded ideas")
-    .option("--all", "Show all ideas regardless of status")
-    .option("-q, --query <query>", "Search raw ideas")
-    .option("-l, --limit <n>", "Limit results")
+    .option("-p, --pending", "Show pending ideas")
+    .option("-r, --processing", "Show processing ideas")
+    .option("-s, --stuck", "Show stuck ideas")
+    .option("-d, --done", "Show succeeded ideas")
+    .option("-a, --all", "Show all ideas regardless of status")
+    .option("-q, --query [query]", "Search raw ideas")
+    .option("-l, --limit [n]", "Limit results")
     .action(async ({ pending, processing, stuck, done, all, query, limit }) => {
       const cfg = requireAuth();
       const api = new TreeAPI(cfg.apiKey);

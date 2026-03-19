@@ -1,6 +1,6 @@
 # treef-cli
 
-CLI for [Tree](https://tree.tabors.site) — navigate and manage your trees like a filesystem from the terminal.
+Terminal client for [Tree](https://tree.tabors.site) — a context management system for organizing AI, data, and ideas into living structure. Navigate your trees like a filesystem.
 
 ## Install
 
@@ -8,7 +8,7 @@ CLI for [Tree](https://tree.tabors.site) — navigate and manage your trees like
 npm install -g treef-cli
 ```
 
-## Get Started
+## Quick Start
 
 ```bash
 treef login --key YOUR_API_KEY    # get your key from tree.tabors.site
@@ -53,7 +53,7 @@ exit                         # leave the shell
 
 ### User Home
 
-Commands available without entering a tree. `ls` and `cd` also work from home to list/enter trees.
+Your home screen before entering a tree. `ls` and `cd` also work from here to list and enter trees.
 
 | Command                      | Description                                 |
 | ---------------------------- | ------------------------------------------- |
@@ -64,8 +64,8 @@ Commands available without entering a tree. `ls` and `cd` also work from home to
 | `home`                       | Leave current tree, return home             |
 | `invites`                    | List pending invites from other users       |
 | `tags` / `mail`              | Notes where you've been @tagged             |
-| `notes`                      | Your user-level notes                       |
-| `chats`                      | All AI chats across your trees              |
+| `notes`                      | Your user-level notes. `-l` limit, `-q` search |
+| `chats`                      | All AI chats across your trees. `-l` limit  |
 | `contributions`              | Your recent contributions                   |
 | `share-token [token]`        | Show or set your share token                |
 | `share idea <id>`            | Public link to a raw idea                   |
@@ -76,7 +76,8 @@ Capture ideas from anywhere. AI figures out where they belong.
 
 | Command                       | Description                                                           |
 | ----------------------------- | --------------------------------------------------------------------- |
-| `ideas`                       | List ideas. Flags: `--pending` `--stuck` `--done` `--all` (stackable) |
+| `ideas`                       | List ideas. `-p` pending, `-r` processing, `-s` stuck, `-d` done, `-a` all, `-q` search, `-l` limit |
+| `cat idea <id or #>`          | View full content of a raw idea                                       |
 | `idea <message>`              | AI places your idea in the right tree and navigates you there         |
 | `idea-store <message>`        | Save an idea for later without processing                             |
 | `idea-place <id or message>`  | AI-place an idea (fire-and-forget)                                    |
@@ -88,18 +89,20 @@ Capture ideas from anywhere. AI figures out where they belong.
 
 ### Navigation
 
-Inside a tree. `ls` and `cd` also work from home (listing/entering trees).
+Move through your tree the way you'd move through a filesystem.
 
 | Command        | Description                                                                                  |
 | -------------- | -------------------------------------------------------------------------------------------- |
 | `pwd`          | Print current path                                                                           |
 | `ls` / `ls -l` | List children. Long format shows IDs and status                                              |
 | `cd <name>`    | Navigate into a child. Supports `..`, `/`, `-r` (search whole tree), path chaining (`A/B/C`) |
-| `tree`         | Render subtree. Flags: `--active`, `--completed`, `--trimmed`                                |
+| `tree`         | Render subtree. `-a` active, `-c` completed, `-t` trimmed                                    |
 
 Nodes have three statuses: **active** (green), **completed** (gray), **trimmed** (dim).
 
 ### Node Management
+
+Build and reshape your tree structure.
 
 | Command               | Description                                                         |
 | --------------------- | ------------------------------------------------------------------- |
@@ -114,14 +117,17 @@ Nodes have three statuses: **active** (green), **completed** (gray), **trimmed**
 
 ### Notes & Values
 
+Every note adds context the AI can work with. Values track anything quantitative.
+
 | Command             | Description                                                                |
 | ------------------- | -------------------------------------------------------------------------- |
 | `note <content>`    | Post a note on the current node                                            |
-| `notes`             | List notes on the current node                                             |
+| `notes`             | List notes on the current node. `-l` limit, `-q` search                    |
+| `cat note <id or #>` | View full content of a note                                               |
 | `rm-note <id> -f`   | Delete a note                                                              |
 | `book`              | Print the full book of notes from current node down                        |
 | `contributions`     | List contributions on the current node                                     |
-| `values`            | List values on the current node. `--global` for flat totals, `--tree` for per-node breakdown |
+| `values`            | List values on the current node. `-g` global totals, `-t` per-node tree breakdown |
 | `value <key> <val>` | Set a value                                                                |
 | `goal <key> <goal>` | Set a goal                                                                 |
 
@@ -132,10 +138,12 @@ Date: `MM/DD/YYYY`. Time: `HH:MM` or `HH:MMam/pm`. Reeffect: hours. Use `clear` 
 | Command                             | Description                                                       |
 | ----------------------------------- | ----------------------------------------------------------------- |
 | `schedule <date> [time] [reeffect]` | Set schedule (e.g. `1/11/2025 3`, `1/11/2025 11:45pm 5`, `clear`) |
-| `calendar`                          | Show scheduled dates across the tree                              |
+| `calendar`                          | Show scheduled dates. `-m` month (1-12 or name), `-y` year       |
 | `dream-time <HH:MM>`                | Set nightly dream time (or `clear`)                               |
 
 ### Collaboration
+
+Work on trees with other people.
 
 | Command              | Description                       |
 | -------------------- | --------------------------------- |
@@ -172,15 +180,19 @@ Clickable terminal hyperlinks. `link` uses your share token; `share` generates p
 
 ### AI
 
+AI has full context of the branch you're in.
+
 | Command           | Description                                    |
 | ----------------- | ---------------------------------------------- |
 | `chat <message>`  | Chat with AI about the current branch          |
 | `place <message>` | AI writes content into the branch              |
 | `query <message>` | Ask AI about the branch (read-only, no writes) |
-| `chats`           | Chat history for current node                  |
+| `chats`           | Chat history for current node. `-l` limit      |
 | `chats tree`      | All chat history across the whole tree         |
 
 ### Understanding Runs
+
+Compress a branch into a structured encoding the AI can reference.
 
 | Command                     | Description                                        |
 | --------------------------- | -------------------------------------------------- |
@@ -210,6 +222,95 @@ All commands accept names or IDs. No quotes needed for multi-word names. Matchin
 4. Name contains query
 
 Multiple matches prompt you to disambiguate by ID.
+
+## Examples
+
+### Let AI build your structure
+
+```
+root Startup
+chat I need to plan a product launch for March —
+     landing page, email sequence, social, and a demo video
+
+tree                             # see what it built
+cd Launch/Landing Page
+note hero section should lead with the compression angle
+```
+
+Don't pre-build the tree. Describe what you need and let AI create the hierarchy, then navigate into it and start adding detail.
+
+### Fire off ideas throughout the day
+
+```
+idea we should batch API calls to reduce token waste
+idea the onboarding flow feels too long
+idea what if nodes could have expiration dates
+ideas                            # see what's pending
+ideas -d                         # check what landed
+```
+
+Ideas don't need a tree selected. AI matches each one to the right tree and places it. Check back later to see where things ended up.
+
+### Track values across a whole tree
+
+```
+root Fitness
+cd Workouts/Pushups
+value reps 20
+cd /Workouts/Running
+value miles 3.1
+cd /
+values -g                        # totals across every branch
+values -t                        # per-node breakdown
+goal miles 100
+```
+
+Values roll up. Set them deep in the tree, read them from anywhere.
+
+### Compress a branch before a decision
+
+```
+root Product
+cd Roadmap
+understand what are the open questions and blockers
+```
+
+An understanding run reads every node and note under the branch and returns a compressed encoding. Useful before planning sessions or when a branch gets deep.
+
+### Collaborate on a shared tree
+
+```
+root Team Wiki
+invite alex
+team                             # see contributors
+notes -q "auth"                  # find what others added
+tags                             # see where you've been @mentioned
+```
+
+### Morning routine from the terminal
+
+```
+treef start
+root Life
+calendar                         # what's scheduled today
+cd -r Workouts                   # jump straight there
+place ran 5k, felt good
+cd /
+dream-time 9:30pm               # AI cleans up tonight
+```
+
+Set a dream time and the AI will reorganize, compress, and maintain your tree overnight.
+
+### Share your work
+
+```
+cd Projects/Blog Post
+book                             # preview the full book of notes
+share book                       # get a public link
+link gateway                     # open the gateway view
+```
+
+---
 
 ## How It Works
 

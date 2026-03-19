@@ -213,9 +213,9 @@ module.exports = (program) => {
   program
     .command("tree")
     .description("Render the subtree from the node you are in")
-    .option("--active", "Show only active nodes")
-    .option("--completed", "Show only completed nodes")
-    .option("--trimmed", "Show only trimmed nodes")
+    .option("-a, --active", "Show only active nodes")
+    .option("-c, --completed", "Show only completed nodes")
+    .option("-t, --trimmed", "Show only trimmed nodes")
     .action(async (opts) => {
       const cfg = requireAuth();
       if (!cfg.activeRootId)
@@ -238,8 +238,8 @@ module.exports = (program) => {
   program
     .command("calendar")
     .description("Show scheduled dates across the tree")
-    .option("-m, --month <month>", "Filter by month (0-11)")
-    .option("-y, --year <year>", "Filter by year")
+    .option("-m, --month [month]", "Filter by month (1-12 or name, e.g. 3, mar, march)")
+    .option("-y, --year [year]", "Filter by year")
     .action(async ({ month, year }) => {
       const cfg = requireAuth();
       if (!cfg.activeRootId)
@@ -247,7 +247,16 @@ module.exports = (program) => {
       const api = new TreeAPI(cfg.apiKey);
       try {
         const opts = {};
-        if (month != null) opts.month = month;
+        if (month != null) {
+          const monthNames = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+          const m = String(month).toLowerCase();
+          const nameIdx = monthNames.findIndex(n => m === n || n.startsWith(m) || m.startsWith(n));
+          if (nameIdx >= 0) {
+            opts.month = nameIdx;
+          } else {
+            opts.month = parseInt(m, 10) - 1; // user says 1=Jan, API wants 0=Jan
+          }
+        }
         if (year) opts.year = year;
         const data = await api.getCalendar(currentNodeId(cfg), opts);
         const events = data.calendar || data.events || data || [];

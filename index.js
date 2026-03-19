@@ -35,7 +35,7 @@ program
         },
         {
           title: "Notes & Values",
-          cmds: ["note", "notes", "rm-note", "book", "contributions", "values", "value", "goal"],
+          cmds: ["note", "notes", "cat", "rm-note", "book", "contributions", "values", "value", "goal"],
         },
         {
           title: "Collaboration",
@@ -168,6 +168,7 @@ const startShell = async () => {
 
     // Prevent Commander from calling process.exit inside the shell
     program.exitOverride();
+    program.commands.forEach((cmd) => cmd.allowUnknownOption());
     program.configureOutput({
       writeErr: (str) => {
         // Suppress Commander's own error output — we handle it
