@@ -460,7 +460,7 @@ program
 
 program
   .command("cd <nameOrId...>")
-  .description('Navigate into a child node by name or ID (use ".." to go up, -r to search whole tree)')
+  .description('Navigate by name or ID. Supports "..", "/", -r (whole tree), and path chaining (Health/Workouts)')
   .option("-r, --recursive", "Search entire tree, not just direct children")
   .action(async (parts, opts) => {
     const name = parts.join(" ");
@@ -479,6 +479,46 @@ program
     if (name === "/") {
       cfg.pathStack = [];
       save(cfg);
+      return;
+    }
+
+    // Handle / chaining: cd Health/Workouts/Pushups
+    if (name.includes("/")) {
+      const segments = name.split("/").filter(Boolean);
+      const api = new TreeAPI(cfg.apiKey);
+      for (const seg of segments) {
+        if (seg === "..") {
+          if (cfg.pathStack.length === 0) {
+            console.log(chalk.dim("Already at root."));
+            break;
+          }
+          cfg.pathStack.pop();
+          save(cfg);
+          continue;
+        }
+        try {
+          const nodeId = currentNodeId(cfg);
+          const data = await api.getNode(nodeId);
+          const children = getChildren(data);
+          // Pre-check so we can print "Stopped at" before findChild's output
+          const q = seg.toLowerCase();
+          const hasMatch = children.some((c) =>
+            c._id === seg || c._id.startsWith(seg) ||
+            (c.name && (c.name.toLowerCase() === q || c.name.toLowerCase().startsWith(q) || c.name.toLowerCase().includes(q)))
+          );
+          if (!hasMatch) {
+            console.log(chalk.yellow(`Stopped at ${currentPath(cfg)} — no child matching "${seg}"`));
+            break;
+          }
+          const target = findChild(children, seg);
+          if (!target) break;
+          cfg.pathStack.push({ id: target._id, name: target.name });
+          save(cfg);
+        } catch (e) {
+          console.error(chalk.red(e.message));
+          break;
+        }
+      }
       return;
     }
 

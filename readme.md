@@ -109,7 +109,7 @@ Commands available once you are inside a tree.
 | -------------- | ------------------------------------------------------------------------- |
 | `pwd`          | Print current path                                                        |
 | `ls` / `ls -l` | List children (long format shows IDs and status)                          |
-| `cd <name>`    | Navigate into a child (supports `..`, `/`, and `-r` to search whole tree) |
+| `cd <name>`    | Navigate into a child. Supports `..`, `/`, `-r` (search whole tree), and path chaining (`cd Health/Workouts`) |
 | `tree`         | Render the subtree from your current node                                 |
 
 ### Node Management
