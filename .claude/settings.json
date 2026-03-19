@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:tree.tabors.site)",
-      "Bash(npm outdated:*)"
-    ]
-  }
-}

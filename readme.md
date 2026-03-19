@@ -28,9 +28,9 @@ cd Workouts                  # go into a node it created
 place did 20 pushups today   # AI logs it in the right spot
 note stretch before next session
 
-root work /                         # back to tree root
+root work                    # back to tree root
 cd Q2 Goals -r               # find it anywhere in the tree
-values --global              # see values across the whole tree
+values --global              # see values across the whole branch
 
 idea i should track my sleep # AI places it in the right tree
 home                         # back to user home
