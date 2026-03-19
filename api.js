@@ -47,6 +47,9 @@ class TreeAPI {
   getUser(userId) {
     return this.get(`/user/${userId}`);
   }
+  setShareToken(userId, token) {
+    return this.post(`/user/${userId}/shareToken`, { htmlShareToken: token });
+  }
   listUserNotes(userId, opts = {}) {
     const params = new URLSearchParams();
     if (opts.limit) params.set("limit", opts.limit);

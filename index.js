@@ -264,18 +264,21 @@ program
     try {
       const api = new TreeAPI(key);
       const me = await api.me();
-      const userId = me.userId;
-      const data = await api.getUser(userId);
-      const username = me.username || data.user?.username || data.username || userId;
       const cfg = load();
       cfg.apiKey = key;
-      cfg.userId = userId;
-      cfg.username = username;
+      cfg.userId = me.userId;
+      cfg.username = me.username;
+      cfg.plan = me.profileType || null;
+      cfg.planExpiresAt = me.planExpiresAt || null;
+      cfg.shareToken = me.shareToken || null;
+      cfg.energy = me.energy || null;
       cfg.pathStack = [];
       cfg.activeRootId = null;
       cfg.activeRootName = null;
       save(cfg);
-      console.log(chalk.green(`✓ Logged in as ${username}`));
+      console.log(chalk.green(`✓ Logged in as ${me.username}`));
+      if (me.profileType) console.log(chalk.dim(`  Plan: ${me.profileType}`));
+      const data = await api.getUser(me.userId);
       const roots = data.roots || data.user?.roots || [];
       if (roots.length) {
         console.log(chalk.dim("\nYour trees:"));
@@ -1052,6 +1055,73 @@ program
     }
   });
 
+// Helper to print a clickable OSC 8 hyperlink in the terminal
+function termLink(url, label) {
+  return `\u001B]8;;${url}\u001B\\${label}\u001B]8;;\u001B\\`;
+}
+
+program
+  .command("share-token [token]")
+  .description("Show or set your share token. share-token <token> to update")
+  .action(async (token) => {
+    const cfg = requireAuth();
+    if (!token) {
+      return console.log(cfg.shareToken ? chalk.cyan(cfg.shareToken) : chalk.dim("(none)"));
+    }
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      await api.setShareToken(cfg.userId, token);
+      cfg.shareToken = token;
+      save(cfg);
+      console.log(chalk.green("✓ Share token updated"));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("link [type] [id]")
+  .description("Open a clickable link to your current location in the Tree web app")
+  .action((type, id) => {
+    const cfg = load();
+    const BASE = "https://tree.tabors.site";
+    const qs = cfg.shareToken ? `?token=${cfg.shareToken}&html` : "?html";
+
+    if (!cfg.userId) {
+      const url = `${BASE}/app`;
+      return console.log(termLink(url, url));
+    }
+
+    let url;
+
+    if (!type) {
+      // No args — link to current context
+      if (!cfg.activeRootId) {
+        url = `${BASE}/api/v1/user/${cfg.userId}${qs}`;
+      } else {
+        const nodeId = currentNodeId(cfg);
+        url = `${BASE}/api/v1/node/${nodeId}${qs}`;
+      }
+    } else if (type === "book") {
+      const nodeId = cfg.activeRootId ? currentNodeId(cfg) : null;
+      if (!nodeId) {
+        return console.log(chalk.yellow("Enter a tree first to link the book."));
+      }
+      url = `${BASE}/api/v1/root/${cfg.activeRootId}/book${qs}`;
+    } else if (type === "idea") {
+      if (!id) return console.log(chalk.yellow("Usage: link idea <rawIdeaId>"));
+      url = `${BASE}/api/v1/user/${cfg.userId}/raw-ideas/${id}${qs}`;
+    } else if (type === "note") {
+      if (!id) return console.log(chalk.yellow("Usage: link note <noteId>"));
+      const nodeId = currentNodeId(cfg);
+      url = `${BASE}/api/v1/node/${nodeId}/latest/notes/${id}/editor${qs}`;
+    } else {
+      return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link book, link idea <id>, link note <id>`));
+    }
+
+    console.log(termLink(url, url));
+  });
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CHATS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1453,13 +1523,24 @@ program
 program
   .command("whoami")
   .description("Show current login and active tree")
-  .action(() => {
+  .action(async () => {
     const cfg = load();
     if (!cfg.apiKey) return console.log(chalk.yellow("Not logged in."));
+    // Re-sync from /me
+    try {
+      const api = new TreeAPI(cfg.apiKey);
+      const me = await api.me();
+      cfg.username = me.username;
+      cfg.plan = me.profileType || null;
+      cfg.planExpiresAt = me.planExpiresAt || null;
+      cfg.shareToken = me.shareToken || null;
+      cfg.energy = me.energy || null;
+      save(cfg);
+    } catch (_) {}
     console.log(`User:  ${chalk.cyan(cfg.username || cfg.userId)}`);
-    console.log(
-      `Tree:  ${chalk.cyan(cfg.activeRootName || chalk.dim("(none)"))}  ${chalk.dim(cfg.activeRootId || "")}`,
-    );
+    if (cfg.plan) console.log(`Plan:  ${chalk.cyan(cfg.plan)}${cfg.planExpiresAt ? chalk.dim(" (expires " + new Date(cfg.planExpiresAt).toLocaleDateString() + ")") : ""}`);
+    if (cfg.energy) console.log(`Energy: ${chalk.cyan(cfg.energy.available)} available  ${chalk.dim(cfg.energy.additional + " additional · " + cfg.energy.total + " total")}`);
+    console.log(`Tree:  ${chalk.cyan(cfg.activeRootName || chalk.dim("(none)"))}  ${chalk.dim(cfg.activeRootId || "")}`);
     console.log(`Path:  ${chalk.cyan(currentPath(cfg))}`);
   });
 
