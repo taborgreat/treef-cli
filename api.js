@@ -62,6 +62,9 @@ class TreeAPI {
     const qs = params.toString();
     return this.get(`/user/${userId}/contributions${qs ? "?" + qs : ""}`);
   }
+  listUserTags(userId) {
+    return this.get(`/user/${userId}/tags`);
+  }
   listUserChats(userId) {
     return this.get(`/user/${userId}/chats`);
   }

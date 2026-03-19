@@ -82,7 +82,7 @@ Commands available without entering a tree.
 | `use <name>`                  | Switch active root tree                                                                                             |
 | `root <name>`                 | Switch active root tree (alias for use)                                                                             |
 | `mkroot <name>`               | Create a new root tree                                                                                              |
-| `retire [name] -f`            | Leave a shared tree, or delete if you are the sole owner. Name optional if inside a tree                            |
+| `retire/leave [name] -f`      | Leave a shared tree, or delete if you are the sole owner. Name optional if inside a tree                            |
 | `home`                        | Leave current tree, return to user home                                                                             |
 | `ideas`                       | List pending/stuck/processing ideas. Flags: `--pending` `--processing` `--stuck` `--done` `--all`. Stack to combine |
 | `idea <message>`              | Send an idea from anywhere — AI places it in the right tree and navigates you there                                 |
@@ -92,13 +92,12 @@ Commands available without entering a tree.
 | `idea-auto [on\|off]`         | Toggle automatic placement of pending raw ideas every 15 min (Standard plan+). No arg = show current status         |
 | `idea-transfer <id> <nodeId>` | Manually transfer a raw idea to a specific node (use when you know exactly where it should go or don't want AI)     |
 | `notes`                       | List your user-level notes                                                                                          |
+| `tags/mail`                   | List notes where you've been @tagged by other users                                                                 |
 | `chats`                       | In home: all AI chats across all your trees. In tree: current node's chats                                          |
 | `contributions`               | List your recent contributions                                                                                      |
 | `share-token [token]`         | Show your share token, or set a new one (`share-token <token>`)                                                     |
 | `link [type] [id]`            | Clickable link to your current location (uses share token). `link root`, `link book`, `link ideas`, `link idea <id>`, `link note <id>` |
 | `share idea <id>`             | Public link to a raw idea (no token required)                                                                       |
-| `share note <id>`             | Public link to a note on the current node (no token required)                                                       |
-| `share book`                  | Generate a public book share link (TOC included automatically)                                                      |
 
 ---
 
@@ -125,6 +124,8 @@ Commands available once you are inside a tree.
 | `activate`               | Set current node and all children to active                                   |
 | `trim`                   | Set current node and all children to trimmed                                  |
 | `prestige`               | Prestige the current node (create a new version)                        |
+| `share note <id>`        | Public link to a note on the current node (no token required)           |
+| `share book`             | Generate a public book share link from current node (TOC included)      |
 
 ### Scheduling
 

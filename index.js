@@ -169,7 +169,7 @@ program
         },
         {
           title: "User Home (no tree required)",
-          cmds: ["roots", "use", "root", "mkroot", "retire", "home", "invites", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions", "share-token", "share", "link"],
+          cmds: ["roots", "use", "root", "mkroot", "retire", "home", "invites", "tags", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions", "share-token", "share", "link"],
         },
         {
           title: "Navigation (inside a tree)",
@@ -396,6 +396,7 @@ program
 
 program
   .command("retire [nameOrId...]")
+  .alias("leave")
   .description("Leave a shared tree, or delete if you are the sole owner. Name optional if inside a tree")
   .option("-f, --force", "Skip confirmation")
   .action(async (parts, opts) => {
@@ -1044,6 +1045,24 @@ program
         const notes = data.notes || data || [];
         printNotes(Array.isArray(notes) ? notes : []);
       }
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("tags")
+  .alias("mail")
+  .description("List notes where you've been @tagged by other users")
+  .action(async () => {
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const data = await api.listUserTags(cfg.userId);
+      const tags = data.notes || data || [];
+      if (!Array.isArray(tags) || !tags.length)
+        return console.log(chalk.dim("  (no tags)"));
+      printNotes(tags);
     } catch (e) {
       console.error(chalk.red(e.message));
     }
