@@ -575,7 +575,7 @@ program
       const opts = {};
       if (month != null) opts.month = month;
       if (year) opts.year = year;
-      const data = await api.getCalendar(cfg.activeRootId, opts);
+      const data = await api.getCalendar(currentNodeId(cfg), opts);
       const events = data.calendar || data.events || data || [];
       if (!Array.isArray(events) || !events.length)
         return console.log(chalk.dim("  (no scheduled items)"));
@@ -886,7 +886,7 @@ program
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
     const api = new TreeAPI(cfg.apiKey);
     try {
-      const data = await api.getBook(cfg.activeRootId);
+      const data = await api.getBook(currentNodeId(cfg));
       const book = data.book || data || {};
       printBook(book);
     } catch (e) {
