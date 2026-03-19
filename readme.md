@@ -91,7 +91,7 @@ Commands available without entering a tree.
 | `idea-auto [on\|off]`         | Toggle automatic placement of pending raw ideas every 15 min (Standard plan+). No arg = show current status         |
 | `idea-transfer <id> <nodeId>` | Manually transfer a raw idea to a specific node (use when you know exactly where it should go or don't want AI)     |
 | `notes`                       | List your user-level notes                                                                                          |
-| `chats`                       | In home: your profile chats. In tree: current node's chats                                                          |
+| `chats`                       | In home: all AI chats across all your trees. In tree: current node's chats                                          |
 | `contributions`               | List your recent contributions                                                                                      |
 
 ---

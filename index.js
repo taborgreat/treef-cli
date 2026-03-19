@@ -3,6 +3,7 @@
 const { Command } = require("commander");
 const chalk = require("chalk");
 const TreeAPI = require("./api");
+const { version } = require("./package.json");
 const {
   load,
   save,
@@ -142,7 +143,7 @@ program
   .description(
     "CLI for Tree — navigate and manage your nodes like a filesystem",
   )
-  .version("1.0.0")
+  .version(version)
   .addHelpText("afterAll", "")
   .configureHelp({
     formatHelp(cmd, helper) {
