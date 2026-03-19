@@ -528,24 +528,37 @@ program
   });
 
 program
-  .command("dream-time <time>")
-  .description("Set nightly dream scheduling time (HH:MM 24h format, or 'clear')")
-  .action(async (time) => {
+  .command("dream-time <time...>")
+  .description("Set nightly dream scheduling time (e.g. 9:30pm, 21:30, or 'clear')")
+  .action(async (parts) => {
+    const input = parts.join(" ").trim();
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
     const api = new TreeAPI(cfg.apiKey);
     try {
-      const dreamTime = time === "clear" ? null : time;
-      await api.setDreamTime(cfg.activeRootId, dreamTime);
-      if (dreamTime) {
-        const [h, m] = dreamTime.split(":").map(Number);
-        const ampm = h >= 12 ? "PM" : "AM";
-        const h12 = h % 12 || 12;
-        console.log(chalk.green(`✓ Dream time set to ${h12}:${String(m).padStart(2, "0")} ${ampm}`));
-      } else {
-        console.log(chalk.green("✓ Dream time cleared"));
+      if (input === "clear") {
+        await api.setDreamTime(cfg.activeRootId, null);
+        return console.log(chalk.green("✓ Dream time cleared"));
       }
+      // Parse time: accepts 9:30pm, 9:30 pm, 21:30, 09:30
+      const m = input.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+      if (!m) return console.log(chalk.red(`Invalid time "${input}". Use formats like 9:30pm, 21:30, or clear`));
+      let hour = parseInt(m[1], 10);
+      const min = m[2];
+      const ampm = m[3];
+      if (ampm) {
+        const ap = ampm.toLowerCase();
+        if (ap === "pm" && hour < 12) hour += 12;
+        if (ap === "am" && hour === 12) hour = 0;
+      }
+      if (hour > 23 || parseInt(min, 10) > 59)
+        return console.log(chalk.red("Invalid time value"));
+      const dreamTime = `${String(hour).padStart(2, "0")}:${min}`;
+      await api.setDreamTime(cfg.activeRootId, dreamTime);
+      const h12 = hour % 12 || 12;
+      const label = hour >= 12 ? "PM" : "AM";
+      console.log(chalk.green(`✓ Dream time set to ${h12}:${min} ${label}`));
     } catch (e) {
       console.error(chalk.red(e.message));
     }
@@ -1031,7 +1044,7 @@ program
 
 program
   .command("place <message...>")
-  .description("AI-place content into the branch you are in")
+  .description("AI-place a message into the branch you are in")
   .action(async (parts) => {
     const message = parts.join(" ");
     const cfg = requireAuth();
@@ -1076,16 +1089,15 @@ program
 // ─────────────────────────────────────────────────────────────────────────────
 program
   .command("ideas")
-  .description("List raw ideas (pending/stuck/processing by default)")
+  .description("List raw ideas (pending/stuck/processing by default). Stack flags to combine: --stuck --done")
   .option("--pending", "Show pending ideas")
   .option("--processing", "Show processing ideas")
   .option("--stuck", "Show stuck ideas")
   .option("--done", "Show succeeded ideas")
   .option("--all", "Show all ideas regardless of status")
-  .option("-s, --status <status>", "Filter by exact status (pending|processing|succeeded|stuck|deleted)")
   .option("-q, --query <query>", "Search raw ideas")
   .option("-l, --limit <n>", "Limit results")
-  .action(async ({ pending, processing, stuck, done, all, status, query, limit }) => {
+  .action(async ({ pending, processing, stuck, done, all, query, limit }) => {
     const cfg = requireAuth();
     const api = new TreeAPI(cfg.apiKey);
     try {
@@ -1097,14 +1109,10 @@ program
         done && "succeeded",
       ].filter(Boolean);
 
-      // Fetch from API — always use "all" when stacking or using shorthand flags so we filter client-side
-      const apiStatus = status || (flaggedStatuses.length || all ? "all" : "all");
-      const data = await api.listRawIdeas(cfg.userId, { status: apiStatus, q: query, limit });
+      const data = await api.listRawIdeas(cfg.userId, { status: "all", q: query, limit });
       let ideas = data.rawIdeas || data.ideas || data || [];
 
-      if (status) {
-        // explicit -s flag: trust the API filter
-      } else if (flaggedStatuses.length) {
+      if (flaggedStatuses.length) {
         ideas = ideas.filter(r => flaggedStatuses.includes(r.status));
       } else if (!all) {
         // Default view: pending, stuck, processing, failed
@@ -1133,7 +1141,7 @@ program
   });
 
 program
-  .command("idea-store <content...>")
+  .command("idea-store <message...>")
   .description("Save a raw idea for later without processing")
   .action(async (parts) => {
     const content = parts.join(" ");
