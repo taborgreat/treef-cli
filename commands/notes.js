@@ -129,21 +129,56 @@ module.exports = (program) => {
 
   program
     .command("values")
-    .description("List values on the node you are in")
-    .action(async () => {
+    .description("List values on the current node, or --global/--tree for the whole tree")
+    .option("-g, --global", "Show flat totals across the entire tree")
+    .option("-t, --tree", "Show values as a tree with per-node breakdowns")
+    .action(async ({ global: isGlobal, tree: isTree }) => {
       const cfg = requireAuth();
       if (!cfg.activeRootId)
         return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
       const api = new TreeAPI(cfg.apiKey);
       try {
-        const nodeId = currentNodeId(cfg);
-        const data = await api.getValues(nodeId);
-        const vals = data.values || data || {};
-        const entries = Object.entries(vals).filter(
-          ([k]) => !k.startsWith("_auto__"),
-        );
-        if (!entries.length) return console.log(chalk.dim("  (no values)"));
-        entries.forEach(([k, v]) => console.log(`  ${chalk.cyan(k)}  ${v}`));
+        if (isGlobal || isTree) {
+          const data = await api.getRootValues(cfg.activeRootId);
+          if (isTree) {
+            const tree = data.tree || {};
+            function printNode(node, indent = "") {
+              const local = node.localValues || {};
+              const total = node.totalValues || {};
+              const localEntries = Object.entries(local).filter(([k]) => !k.startsWith("_auto__"));
+              const totalEntries = Object.entries(total).filter(([k]) => !k.startsWith("_auto__"));
+              const hasLocal = localEntries.length > 0;
+              const hasTotal = totalEntries.length > 0;
+              if (hasLocal || hasTotal) {
+                console.log(`${indent}${chalk.bold(node.nodeName || "root")}`);
+                for (const [k, v] of localEntries) {
+                  console.log(`${indent}  ${chalk.cyan(k)}  ${v}`);
+                }
+                if (node.children?.length && hasTotal) {
+                  for (const [k, v] of totalEntries) {
+                    if (local[k] !== v) console.log(`${indent}  ${chalk.dim(k + " (total)")}  ${chalk.dim(v)}`);
+                  }
+                }
+              }
+              for (const child of node.children || []) {
+                printNode(child, indent + "  ");
+              }
+            }
+            printNode(tree);
+          } else {
+            const vals = data.flat || data;
+            const entries = Object.entries(vals).filter(([k]) => !k.startsWith("_auto__"));
+            if (!entries.length) return console.log(chalk.dim("  (no global values)"));
+            console.log(chalk.bold("Global values (all nodes):"));
+            entries.forEach(([k, v]) => console.log(`  ${chalk.cyan(k)}  ${v}`));
+          }
+        } else {
+          const data = await api.getValues(currentNodeId(cfg));
+          const vals = data.values || data || {};
+          const entries = Object.entries(vals).filter(([k]) => !k.startsWith("_auto__"));
+          if (!entries.length) return console.log(chalk.dim("  (no values)"));
+          entries.forEach(([k, v]) => console.log(`  ${chalk.cyan(k)}  ${v}`));
+        }
       } catch (e) {
         console.error(chalk.red(e.message));
       }

@@ -183,6 +183,9 @@ class TreeAPI {
   getValues(nodeId, ver = "latest") {
     return this.get(`/node/${nodeId}/${ver}/values`);
   }
+  getRootValues(rootId) {
+    return this.get(`/root/${rootId}/values`);
+  }
   setValue(nodeId, ver, key, value) {
     return this.post(`/node/${nodeId}/${ver}/value`, { key, value });
   }
