@@ -856,10 +856,11 @@ program
   });
 
 program
-  .command("rm <nameOrId>")
+  .command("rm [nameOrId]")
   .description("Delete a child node by name or ID")
   .option("-f, --force", "Skip confirmation")
   .action(async (name, { force }) => {
+    if (!name) return console.log(chalk.yellow("Usage: rm <name> -f"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
@@ -888,9 +889,10 @@ program
   });
 
 program
-  .command("mv <nameOrId> <destNodeId>")
+  .command("mv [nameOrId] [destNodeId]")
   .description("Move a child node to a new parent")
   .action(async (nodeName, destNodeId) => {
+    if (!nodeName || !destNodeId) return console.log(chalk.yellow("Usage: mv <name> <destNodeId>"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
@@ -910,9 +912,10 @@ program
   });
 
 program
-  .command("rename <nameOrId> <newName>")
+  .command("rename [nameOrId] [newName]")
   .description("Rename a child node")
   .action(async (oldName, newName) => {
+    if (!oldName || !newName) return console.log(chalk.yellow("Usage: rename <name> <newName>"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
@@ -1038,9 +1041,10 @@ program
 // NOTES (note, notes, cat, edit-note, rm-note)
 // ─────────────────────────────────────────────────────────────────────────────
 program
-  .command("note <content...>")
+  .command("note [content...]")
   .description("Post a note on the node you are in")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: note <content>"));
     const content = parts.join(" ");
     const cfg = requireAuth();
     if (!cfg.activeRootId)
@@ -1100,10 +1104,11 @@ program
   });
 
 program
-  .command("rm-note <noteId>")
+  .command("rm-note [noteId]")
   .description("Delete a note by ID")
   .option("-f, --force", "Skip confirmation prompt")
   .action(async (noteId, { force }) => {
+    if (!noteId) return console.log(chalk.yellow("Usage: rm-note <noteId> -f"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
@@ -1189,9 +1194,10 @@ program
   });
 
 program
-  .command("value <key> <value>")
+  .command("value [key] [value]")
   .description("Set a value on the node you are in")
   .action(async (key, value) => {
+    if (!key || !value) return console.log(chalk.yellow("Usage: value <key> <value>"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
@@ -1207,9 +1213,10 @@ program
   });
 
 program
-  .command("goal <key> <goal>")
+  .command("goal [key] [goal]")
   .description("Set a goal on the node you are in")
   .action(async (key, goal) => {
+    if (!key || !goal) return console.log(chalk.yellow("Usage: goal <key> <goal>"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
@@ -1239,7 +1246,7 @@ program
       posts.forEach((p, i) => {
         const date = p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "";
         console.log(`  ${chalk.cyan(i + 1 + ".")} ${chalk.bold(p.title)}`);
-        console.log(`      ${chalk.dim((p.authorName || "") + (date ? " · " + date : ""))}`);
+        console.log(`      ${chalk.dim((p.authorName || "") + (date ? " · " + date : ""))}${p.slug ? "  " + chalk.dim("slug: " + p.slug) : ""}`);
         if (p.summary) console.log(`      ${chalk.dim(p.summary)}`);
         console.log();
       });
@@ -1249,9 +1256,10 @@ program
   });
 
 program
-  .command("blog <slugOrNumber...>")
+  .command("blog [slugOrNumber...]")
   .description("Read a blog post by slug or list number")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: blog <slug or number>. Run 'blogs' to see available posts."));
     const input = parts.join("-");
     const api = new TreeAPI("");
     try {
@@ -1459,9 +1467,10 @@ program
 // AI
 // ─────────────────────────────────────────────────────────────────────────────
 program
-  .command("chat <message...>")
+  .command("chat [message...]")
   .description("Chat with AI about the branch you are in")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: chat <message>"));
     const message = parts.join(" ");
     const cfg = requireAuth();
     if (!cfg.activeRootId)
@@ -1480,9 +1489,10 @@ program
   });
 
 program
-  .command("place <message...>")
+  .command("place [message...]")
   .description("AI-place a message into the branch you are in")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: place <message>"));
     const message = parts.join(" ");
     const cfg = requireAuth();
     if (!cfg.activeRootId)
@@ -1501,9 +1511,10 @@ program
   });
 
 program
-  .command("query <message...>")
+  .command("query [message...]")
   .description("Query AI about the branch you are in (read-only)")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: query <message>"));
     const message = parts.join(" ");
     const cfg = requireAuth();
     if (!cfg.activeRootId)
@@ -1578,9 +1589,10 @@ program
   });
 
 program
-  .command("idea-store <message...>")
+  .command("idea-store [message...]")
   .description("Save a raw idea for later without processing")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: idea-store <message>"));
     const content = parts.join(" ");
     const cfg = requireAuth();
     const api = new TreeAPI(cfg.apiKey);
@@ -1594,10 +1606,11 @@ program
   });
 
 program
-  .command("rm-idea <rawIdeaId>")
+  .command("rm-idea [rawIdeaId]")
   .description("Delete a raw idea")
   .option("-f, --force", "Skip confirmation")
   .action(async (rawIdeaId, { force }) => {
+    if (!rawIdeaId) return console.log(chalk.yellow("Usage: rm-idea <id> -f"));
     const cfg = requireAuth();
     if (!force)
       return console.log(chalk.yellow(`Delete raw idea ${rawIdeaId}? Pass -f to confirm.`));
@@ -1611,9 +1624,10 @@ program
   });
 
 program
-  .command("idea-place <input...>")
+  .command("idea-place [input...]")
   .description("AI-place an idea (fire-and-forget). Pass a rawIdeaId or just type your idea directly")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: idea-place <rawIdeaId or message>"));
     const input = parts.join(" ");
     const cfg = requireAuth();
     console.log(chalk.dim("Placing…"));
@@ -1632,9 +1646,10 @@ program
   });
 
 program
-  .command("idea <message...>")
+  .command("idea [message...]")
   .description("Send an idea from anywhere — AI places it in the right tree and navigates you there")
   .action(async (parts) => {
+    if (!parts || !parts.length) return console.log(chalk.yellow("Usage: idea <message>"));
     const input = parts.join(" ");
     const cfg = requireAuth();
     console.log(chalk.dim("Thinking…"));
@@ -1671,9 +1686,10 @@ program
   });
 
 program
-  .command("idea-transfer <rawIdeaId> <nodeId>")
+  .command("idea-transfer [rawIdeaId] [nodeId]")
   .description("Manually transfer a raw idea to a specific node")
   .action(async (rawIdeaId, nodeId) => {
+    if (!rawIdeaId || !nodeId) return console.log(chalk.yellow("Usage: idea-transfer <rawIdeaId> <nodeId>"));
     const cfg = requireAuth();
     const api = new TreeAPI(cfg.apiKey);
     try {
@@ -1782,9 +1798,10 @@ program
   });
 
 program
-  .command("understand-status <runId>")
+  .command("understand-status [runId]")
   .description("Check status of an understanding run")
   .action(async (runId) => {
+    if (!runId) return console.log(chalk.yellow("Usage: understand-status <runId>"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
@@ -1805,9 +1822,10 @@ program
   });
 
 program
-  .command("understand-stop <runId>")
+  .command("understand-stop [runId]")
   .description("Stop a running understanding run")
   .action(async (runId) => {
+    if (!runId) return console.log(chalk.yellow("Usage: understand-stop <runId>"));
     const cfg = requireAuth();
     if (!cfg.activeRootId)
       return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
