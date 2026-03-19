@@ -24,15 +24,19 @@ treef login --key YOUR_API_KEY
 
 ```bash
 treef start                # launch the interactive shell
-treef roots                # list your trees
-treef root Life Plan       # switch into a tree
-treef ls                   # list children
-treef cd Health            # navigate deeper
-treef tree                 # render the subtree
-treef chat went to doctor appointment today. told me to rest to recover my ankle
-treef place create a plan to workout 3 times a week
-treef chat i did the 20 pushups. what should i do now?
-treef understand tell me about my general physical and mental trends
+```
+
+```
+roots                      # list your trees
+root Life Plan             # switch into a tree
+ls                         # list children
+cd Health                  # navigate deeper
+tree                       # render the subtree
+chat went to doctor appointment today. told me to rest to recover my ankle
+place create a plan to workout 3 times a week
+chat i did the 20 pushups. what should i do now?
+understand tell me about my general physical and mental trends
+exit                       # leave the shell
 ```
 
 ---
