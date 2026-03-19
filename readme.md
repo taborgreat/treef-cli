@@ -33,14 +33,23 @@ root Life Plan             # switch into a tree
 
 ls                         # list children
 
-cd Health                  # navigate deeper
+mkdir Injured, Fitness        # create multiple new children
+
+cd Injured                  # navigate deeper
 
 tree                       # render the subtree
 
 chat went to doctor appointment today. told me to rest to recover my ankle
 
+cd ..
+
+cd Fitness
+
 place create a plan to workout 3 times a week
+
 chat i did the 20 pushups. what should i do now?
+
+cd /
 
 understand tell me about my general physical and mental trends
 
