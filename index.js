@@ -139,7 +139,7 @@ function findChild(children, query) {
 }
 
 program
-  .name("tree")
+  .name("treef")
   .description(
     "CLI for Tree — navigate and manage your nodes like a filesystem",
   )
@@ -1428,8 +1428,8 @@ const startShell = async () => {
     });
 
     console.log(
-      chalk.bold.green("Tree Shell") +
-        chalk.dim('  (type "exit" or Ctrl+C to quit, "help" for commands)'),
+      chalk.bold.green("TreeF Shell") +
+        chalk.dim('  (type "exit" to quit, "help" for commands)'),
     );
     console.log("");
 
@@ -1478,6 +1478,18 @@ const startShell = async () => {
     rl.on("close", () => {
       console.log(chalk.dim("\nBye!"));
       process.exit(0);
+    });
+
+    rl.on("SIGINT", () => {
+      if (rl.line.length > 0) {
+        // Line has content — clear it and re-prompt
+        rl.write(null, { ctrl: true, name: "u" });
+        process.stdout.write("\n");
+        prompt();
+      } else {
+        // Empty line — exit
+        rl.close();
+      }
     });
 
     prompt();
