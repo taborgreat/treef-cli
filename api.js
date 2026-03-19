@@ -144,6 +144,9 @@ class TreeAPI {
   getBook(rootId) {
     return this.get(`/root/${rootId}/book`);
   }
+  generateBookShare(nodeId, settings = {}) {
+    return this.post(`/root/${nodeId}/book/generate`, settings);
+  }
 
   // ── Values ────────────────────────────────────────────────────────────────
   getValues(nodeId, ver = "latest") {

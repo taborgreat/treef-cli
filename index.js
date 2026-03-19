@@ -169,7 +169,7 @@ program
         },
         {
           title: "User Home (no tree required)",
-          cmds: ["roots", "use", "root", "mkroot", "home", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions"],
+          cmds: ["roots", "use", "root", "mkroot", "home", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions", "share-token", "share", "link"],
         },
         {
           title: "Navigation (inside a tree)",
@@ -1080,6 +1080,57 @@ program
   });
 
 program
+  .command("share [type] [id]")
+  .description("Generate a public share link. share idea <id> | share note <id> | share book")
+  .action(async (type, id) => {
+    if (!type) {
+      const cfg = load();
+      if (cfg.activeRootId) return console.log(chalk.yellow("Usage: share note <id> | share book"));
+      return console.log(chalk.yellow("Usage: share idea <id> | share note <id> | share book"));
+    }
+    const cfg = requireAuth();
+    const BASE = "https://tree.tabors.site";
+
+    if (type === "idea") {
+      if (!id) return console.log(chalk.yellow("Usage: share idea <rawIdeaId>"));
+      const url = `${BASE}/api/v1/user/${cfg.userId}/raw-ideas/${id}?html`;
+      return console.log(termLink(url, url));
+    }
+
+    if (type === "note") {
+      if (!id) return console.log(chalk.yellow("Usage: share note <noteId>"));
+      if (!cfg.activeRootId) return console.log(chalk.yellow("Enter a tree first."));
+      const nodeId = currentNodeId(cfg);
+      const url = `${BASE}/api/v1/node/${nodeId}/latest/notes/${id}?html`;
+      return console.log(termLink(url, url));
+    }
+
+    if (type === "book") {
+      if (!cfg.activeRootId) return console.log(chalk.yellow("Enter a tree first."));
+      const nodeId = currentNodeId(cfg);
+      const settings = { toc: true };
+      const api = new TreeAPI(cfg.apiKey);
+      try {
+        const data = await api.generateBookShare(nodeId, settings);
+        const path = data.redirect || data.shareUrl;
+        if (!path) return console.log(chalk.red("No share link returned"));
+        const url = `${BASE}${path.startsWith("/") ? path : "/" + path}`;
+        console.log(termLink(url, url));
+      } catch (e) {
+        console.error(chalk.red(e.message));
+      }
+      return;
+    }
+
+    const cfg2 = load();
+    if (cfg2.activeRootId) {
+      console.log(chalk.yellow(`Unknown type "${type}". Use: share note <id> | share book`));
+    } else {
+      console.log(chalk.yellow(`Unknown type "${type}". Use: share idea <id> | share note <id> | share book`));
+    }
+  });
+
+program
   .command("link [type] [id]")
   .description("Open a clickable link to your current location in the Tree web app")
   .action((type, id) => {
@@ -1102,6 +1153,9 @@ program
         const nodeId = currentNodeId(cfg);
         url = `${BASE}/api/v1/node/${nodeId}${qs}`;
       }
+    } else if (type === "root") {
+      if (!cfg.activeRootId) return console.log(chalk.yellow("Enter a tree first."));
+      url = `${BASE}/api/v1/root/${cfg.activeRootId}${qs}`;
     } else if (type === "book") {
       const nodeId = cfg.activeRootId ? currentNodeId(cfg) : null;
       if (!nodeId) {
@@ -1116,7 +1170,7 @@ program
       const nodeId = currentNodeId(cfg);
       url = `${BASE}/api/v1/node/${nodeId}/latest/notes/${id}/editor${qs}`;
     } else {
-      return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link book, link idea <id>, link note <id>`));
+      return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link root, link book, link idea <id>, link note <id>`));
     }
 
     console.log(termLink(url, url));

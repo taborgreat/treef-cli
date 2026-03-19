@@ -62,13 +62,13 @@ exit                       # leave the shell
 
 ### Session
 
-| Command             | Description                        |
-| ------------------- | ---------------------------------- |
-| `start` / `shell`   | Launch interactive shell           |
-| `stop` / `exit`     | Exit the shell                     |
-| `login --key <key>` | Authenticate with your API key     |
-| `logout`            | Clear stored credentials           |
-| `whoami`            | Show current login and active tree |
+| Command             | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `start` / `shell`   | Launch interactive shell                          |
+| `stop` / `exit`     | Exit the shell                                    |
+| `login --key <key>` | Authenticate with your API key                    |
+| `logout`            | Clear stored credentials                          |
+| `whoami`            | Show current login, plan, energy, and active tree |
 
 ---
 
@@ -93,6 +93,11 @@ Commands available without entering a tree.
 | `notes`                       | List your user-level notes                                                                                          |
 | `chats`                       | In home: all AI chats across all your trees. In tree: current node's chats                                          |
 | `contributions`               | List your recent contributions                                                                                      |
+| `share-token [token]`         | Show your share token, or set a new one (`share-token <token>`)                                                     |
+| `link [type] [id]`            | Clickable link to your current location (uses share token). `link root`, `link book`, `link idea <id>`, `link note <id>` |
+| `share idea <id>`             | Public link to a raw idea (no token required)                                                                       |
+| `share note <id>`             | Public link to a note on the current node (no token required)                                                       |
+| `share book`                  | Generate a public book share link (TOC included automatically)                                                      |
 
 ---
 
@@ -100,12 +105,12 @@ Commands available without entering a tree.
 
 Commands available once you are inside a tree.
 
-| Command        | Description                                      |
-| -------------- | ------------------------------------------------ |
-| `pwd`          | Print current path                               |
-| `ls` / `ls -l` | List children (long format shows IDs and status) |
+| Command        | Description                                                               |
+| -------------- | ------------------------------------------------------------------------- |
+| `pwd`          | Print current path                                                        |
+| `ls` / `ls -l` | List children (long format shows IDs and status)                          |
 | `cd <name>`    | Navigate into a child (supports `..`, `/`, and `-r` to search whole tree) |
-| `tree`         | Render the subtree from your current node        |
+| `tree`         | Render the subtree from your current node                                 |
 
 ### Node Management
 
@@ -153,12 +158,12 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 
 ### Understanding Runs
 
-| Command                     | Description                                      |
-| --------------------------- | ------------------------------------------------ |
+| Command                     | Description                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------- |
 | `understand [perspective]`  | Start an understanding run from the current node. Waits and returns the final encoding |
-| `understandings`            | List understanding runs                          |
-| `understand-status <runId>` | Check run progress                               |
-| `understand-stop <runId>`   | Stop a running understanding run                 |
+| `understandings`            | List understanding runs                                                                |
+| `understand-status <runId>` | Check run progress                                                                     |
+| `understand-stop <runId>`   | Stop a running understanding run                                                       |
 
 ### Blog
 

@@ -1,7 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "WebFetch(domain:tree.tabors.site)"
-    ]
+    "allow": ["WebFetch(domain:tree.tabors.site)"]
   }
 }
