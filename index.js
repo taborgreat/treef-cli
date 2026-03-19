@@ -1086,7 +1086,7 @@ program
     if (!type) {
       const cfg = load();
       if (cfg.activeRootId) return console.log(chalk.yellow("Usage: share note <id> | share book"));
-      return console.log(chalk.yellow("Usage: share idea <id> | share note <id> | share book"));
+      return console.log(chalk.yellow("Usage: share idea <id> | share note <id>"));
     }
     const cfg = requireAuth();
     const BASE = "https://tree.tabors.site";
@@ -1162,6 +1162,8 @@ program
         return console.log(chalk.yellow("Enter a tree first to link the book."));
       }
       url = `${BASE}/api/v1/root/${cfg.activeRootId}/book${qs}`;
+    } else if (type === "ideas") {
+      url = `${BASE}/api/v1/user/${cfg.userId}/raw-ideas${qs}`;
     } else if (type === "idea") {
       if (!id) return console.log(chalk.yellow("Usage: link idea <rawIdeaId>"));
       url = `${BASE}/api/v1/user/${cfg.userId}/raw-ideas/${id}${qs}`;
@@ -1170,7 +1172,10 @@ program
       const nodeId = currentNodeId(cfg);
       url = `${BASE}/api/v1/node/${nodeId}/latest/notes/${id}/editor${qs}`;
     } else {
-      return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link root, link book, link idea <id>, link note <id>`));
+      if (cfg.activeRootId) {
+        return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link root, link book, link note <id>`));
+      }
+      return console.log(chalk.yellow(`Unknown link type "${type}". Try: link, link ideas, link idea <id>, link note <id>`));
     }
 
     console.log(termLink(url, url));

@@ -94,7 +94,7 @@ Commands available without entering a tree.
 | `chats`                       | In home: all AI chats across all your trees. In tree: current node's chats                                          |
 | `contributions`               | List your recent contributions                                                                                      |
 | `share-token [token]`         | Show your share token, or set a new one (`share-token <token>`)                                                     |
-| `link [type] [id]`            | Clickable link to your current location (uses share token). `link root`, `link book`, `link idea <id>`, `link note <id>` |
+| `link [type] [id]`            | Clickable link to your current location (uses share token). `link root`, `link book`, `link ideas`, `link idea <id>`, `link note <id>` |
 | `share idea <id>`             | Public link to a raw idea (no token required)                                                                       |
 | `share note <id>`             | Public link to a note on the current node (no token required)                                                       |
 | `share book`                  | Generate a public book share link (TOC included automatically)                                                      |
