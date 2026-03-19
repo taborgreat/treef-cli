@@ -28,8 +28,8 @@ cd Workouts                  # go into a node it created
 place did 20 pushups today   # AI logs it in the right spot
 note stretch before next session
 
-cd /                         # back to tree root
-cd Health/Workouts -r        # path chaining + deep search
+root work /                         # back to tree root
+cd Q2 Goals -r               # find it anywhere in the tree
 values --global              # see values across the whole tree
 
 idea i should track my sleep # AI places it in the right tree
@@ -55,35 +55,35 @@ exit                         # leave the shell
 
 Your home screen before entering a tree. `ls` and `cd` also work from here to list and enter trees.
 
-| Command                      | Description                                 |
-| ---------------------------- | ------------------------------------------- |
-| `roots`                      | List all your trees                         |
-| `use <name>` / `root <name>` | Enter a tree by name or ID                  |
-| `mkroot <name>`              | Create a new tree                           |
-| `retire/leave [name] -f`     | Leave a shared tree or delete if sole owner |
-| `home`                       | Leave current tree, return home             |
-| `invites`                    | List pending invites from other users       |
-| `tags` / `mail`              | Notes where you've been @tagged             |
+| Command                      | Description                                    |
+| ---------------------------- | ---------------------------------------------- |
+| `roots`                      | List all your trees                            |
+| `use <name>` / `root <name>` | Enter a tree by name or ID                     |
+| `mkroot <name>`              | Create a new tree                              |
+| `retire/leave [name] -f`     | Leave a shared tree or delete if sole owner    |
+| `home`                       | Leave current tree, return home                |
+| `invites`                    | List pending invites from other users          |
+| `tags` / `mail`              | Notes where you've been @tagged                |
 | `notes`                      | Your user-level notes. `-l` limit, `-q` search |
-| `chats`                      | All AI chats across your trees. `-l` limit  |
-| `contributions`              | Your recent contributions                   |
-| `share-token [token]`        | Show or set your share token                |
-| `share idea <id>`            | Public link to a raw idea                   |
+| `chats`                      | All AI chats across your trees. `-l` limit     |
+| `contributions`              | Your recent contributions                      |
+| `share-token [token]`        | Show or set your share token                   |
+| `share idea <id>`            | Public link to a raw idea                      |
 
 ### Raw Ideas
 
 Capture ideas from anywhere. AI figures out where they belong.
 
-| Command                       | Description                                                           |
-| ----------------------------- | --------------------------------------------------------------------- |
+| Command                       | Description                                                                                         |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- |
 | `ideas`                       | List ideas. `-p` pending, `-r` processing, `-s` stuck, `-d` done, `-a` all, `-q` search, `-l` limit |
-| `cat idea <id or #>`          | View full content of a raw idea                                       |
-| `idea <message>`              | AI places your idea in the right tree and navigates you there         |
-| `idea-store <message>`        | Save an idea for later without processing                             |
-| `idea-place <id or message>`  | AI-place an idea (fire-and-forget)                                    |
-| `idea-auto [on/off]`          | Toggle auto-placement every 15 min (Standard plan+)                   |
-| `idea-transfer <id> <nodeId>` | Manually move an idea to a specific node                              |
-| `rm-idea <id> -f`             | Delete a raw idea                                                     |
+| `cat idea <id or #>`          | View full content of a raw idea                                                                     |
+| `idea <message>`              | AI places your idea in the right tree and navigates you there                                       |
+| `idea-store <message>`        | Save an idea for later without processing                                                           |
+| `idea-place <id or message>`  | AI-place an idea (fire-and-forget)                                                                  |
+| `idea-auto [on/off]`          | Toggle auto-placement every 15 min (Standard plan+)                                                 |
+| `idea-transfer <id> <nodeId>` | Manually move an idea to a specific node                                                            |
+| `rm-idea <id> -f`             | Delete a raw idea                                                                                   |
 
 ---
 
@@ -119,17 +119,17 @@ Build and reshape your tree structure.
 
 Every note adds context the AI can work with. Values track anything quantitative.
 
-| Command             | Description                                                                |
-| ------------------- | -------------------------------------------------------------------------- |
-| `note <content>`    | Post a note on the current node                                            |
-| `notes`             | List notes on the current node. `-l` limit, `-q` search                    |
-| `cat note <id or #>` | View full content of a note                                               |
-| `rm-note <id> -f`   | Delete a note                                                              |
-| `book`              | Print the full book of notes from current node down                        |
-| `contributions`     | List contributions on the current node                                     |
-| `values`            | List values on the current node. `-g` global totals, `-t` per-node tree breakdown |
-| `value <key> <val>` | Set a value                                                                |
-| `goal <key> <goal>` | Set a goal                                                                 |
+| Command              | Description                                                                       |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `note <content>`     | Post a note on the current node                                                   |
+| `notes`              | List notes on the current node. `-l` limit, `-q` search                           |
+| `cat note <id or #>` | View full content of a note                                                       |
+| `rm-note <id> -f`    | Delete a note                                                                     |
+| `book`               | Print the full book of notes from current node down                               |
+| `contributions`      | List contributions on the current node                                            |
+| `values`             | List values on the current node. `-g` global totals, `-t` per-node tree breakdown |
+| `value <key> <val>`  | Set a value                                                                       |
+| `goal <key> <goal>`  | Set a goal                                                                        |
 
 ### Scheduling
 
@@ -138,7 +138,7 @@ Date: `MM/DD/YYYY`. Time: `HH:MM` or `HH:MMam/pm`. Reeffect: hours. Use `clear` 
 | Command                             | Description                                                       |
 | ----------------------------------- | ----------------------------------------------------------------- |
 | `schedule <date> [time] [reeffect]` | Set schedule (e.g. `1/11/2025 3`, `1/11/2025 11:45pm 5`, `clear`) |
-| `calendar`                          | Show scheduled dates. `-m` month (1-12 or name), `-y` year       |
+| `calendar`                          | Show scheduled dates. `-m` month (1-12 or name), `-y` year        |
 | `dream-time <HH:MM>`                | Set nightly dream time (or `clear`)                               |
 
 ### Collaboration
