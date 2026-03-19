@@ -97,6 +97,21 @@ class TreeAPI {
   retireRoot(rootId) {
     return this.post(`/root/${rootId}/retire`, {});
   }
+  invite(rootId, userReceiving) {
+    return this.post(`/root/${rootId}/invite`, { userReceiving });
+  }
+  listInvites(userId) {
+    return this.get(`/user/${userId}/invites`);
+  }
+  respondInvite(userId, inviteId, accept) {
+    return this.post(`/user/${userId}/invites/${inviteId}`, { accept: String(accept) });
+  }
+  transferOwner(rootId, userReceiving) {
+    return this.post(`/root/${rootId}/transfer-owner`, { userReceiving });
+  }
+  removeUser(rootId, userReceiving) {
+    return this.post(`/root/${rootId}/remove-user`, { userReceiving });
+  }
 
   // ── Node ─────────────────────────────────────────────────────────────────
   getNode(nodeId) {

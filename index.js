@@ -169,7 +169,7 @@ program
         },
         {
           title: "User Home (no tree required)",
-          cmds: ["roots", "use", "root", "mkroot", "retire", "home", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions", "share-token", "share", "link"],
+          cmds: ["roots", "use", "root", "mkroot", "retire", "home", "invites", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions", "share-token", "share", "link"],
         },
         {
           title: "Navigation (inside a tree)",
@@ -182,6 +182,10 @@ program
         {
           title: "Notes & Values",
           cmds: ["note", "notes", "rm-note", "book", "contributions", "values", "value", "goal"],
+        },
+        {
+          title: "Collaboration",
+          cmds: ["invite", "invites", "kick", "owner"],
         },
         {
           title: "AI",
@@ -429,6 +433,86 @@ program
     } catch (e) {
       console.error(chalk.red(e.message));
     }
+  });
+
+program
+  .command("invite <userOrAction...>")
+  .description("Invite a user to current tree, or accept/deny a pending invite")
+  .action(async (parts) => {
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    const first = parts[0];
+
+    // invite accept <id> / invite deny <id>
+    if ((first === "accept" || first === "deny") && parts[1]) {
+      try {
+        const isAccept = first === "accept";
+        await api.respondInvite(cfg.userId, parts[1], isAccept);
+        console.log(chalk.green(`✓ Invite ${isAccept ? "accepted" : "declined"}`));
+      } catch (e) { console.error(chalk.red(e.message)); }
+      return;
+    }
+
+    // invite <username or userId> — send invite from current tree
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("Enter a tree first to invite someone, or use: invites"));
+    const userReceiving = parts.join(" ");
+    try {
+      await api.invite(cfg.activeRootId, userReceiving);
+      console.log(chalk.green(`✓ Invited "${userReceiving}" to ${cfg.activeRootName || "this tree"}`));
+    } catch (e) { console.error(chalk.red(e.message)); }
+  });
+
+program
+  .command("invites")
+  .description("List your pending invites")
+  .action(async () => {
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const data = await api.listInvites(cfg.userId);
+      const invites = data.invites || data || [];
+      if (!invites.length) return console.log(chalk.dim("  (no pending invites)"));
+      invites.forEach((inv, i) => {
+        const from = inv.userInviting?.username || inv.userInviting?._id || "";
+        const tree = inv.rootId?.name || inv.rootId || "";
+        const id = inv._id || "";
+        console.log(
+          `  ${chalk.cyan(i + 1 + ".")} ${chalk.bold(tree)}  ${chalk.dim("from")} ${from}  ${chalk.dim(id)}`,
+        );
+      });
+      console.log(chalk.dim("\n  Accept: invite accept <id>  ·  Decline: invite deny <id>"));
+    } catch (e) { console.error(chalk.red(e.message)); }
+  });
+
+program
+  .command("kick <userOrId...>")
+  .description("Remove a contributor from the current tree")
+  .action(async (parts) => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    const userReceiving = parts.join(" ");
+    try {
+      await api.removeUser(cfg.activeRootId, userReceiving);
+      console.log(chalk.green(`✓ Removed "${userReceiving}" from ${cfg.activeRootName || "this tree"}`));
+    } catch (e) { console.error(chalk.red(e.message)); }
+  });
+
+program
+  .command("owner <userOrId...>")
+  .description("Transfer tree ownership to another contributor")
+  .action(async (parts) => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    const userReceiving = parts.join(" ");
+    try {
+      await api.transferOwner(cfg.activeRootId, userReceiving);
+      console.log(chalk.green(`✓ Ownership transferred to "${userReceiving}"`));
+    } catch (e) { console.error(chalk.red(e.message)); }
   });
 
 program

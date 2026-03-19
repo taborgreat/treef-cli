@@ -149,6 +149,17 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 | `value <key> <value>` | Set a value                                             |
 | `goal <key> <goal>`   | Set a goal                                              |
 
+### Collaboration
+
+| Command                        | Description                                                              |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `invite <username or userId>`  | Invite a user to the current tree                                        |
+| `invites`                      | List your pending invites                                                |
+| `invite accept <id>`           | Accept a pending invite                                                  |
+| `invite deny <id>`             | Decline a pending invite                                                 |
+| `kick <username or userId>`    | Remove a contributor from the current tree                               |
+| `owner <username or userId>`   | Transfer tree ownership to another contributor                           |
+
 ### AI
 
 | Command           | Description                                                                    |
