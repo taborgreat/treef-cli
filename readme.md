@@ -109,7 +109,9 @@ Commands available once you are inside a tree.
 | `pwd`          | Print current path                                                        |
 | `ls` / `ls -l` | List children (long format shows IDs and status)                          |
 | `cd <name>`    | Navigate into a child. Supports `..`, `/`, `-r` (search whole tree), and path chaining (`cd Health/Workouts`) |
-| `tree`         | Render the subtree from your current node                                 |
+| `tree`         | Render the subtree from your current node. Flags: `--active`, `--completed`, `--trimmed` to filter by status |
+
+Nodes have three statuses: **active** (green), **completed** (gray), **trimmed** (dim). Use `complete`, `activate`, or `trim` to change status recursively.
 
 ### Node Management
 
@@ -151,6 +153,7 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 
 | Command                        | Description                                                              |
 | ------------------------------ | ------------------------------------------------------------------------ |
+| `team`                         | Show the owner and contributors for the current tree                     |
 | `invite <username or userId>`  | Invite a user to the current tree                                        |
 | `invites`                      | List your pending invites                                                |
 | `invite accept <id>`           | Accept a pending invite                                                  |

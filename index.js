@@ -185,7 +185,7 @@ program
         },
         {
           title: "Collaboration",
-          cmds: ["invite", "invites", "kick", "owner"],
+          cmds: ["team", "invite", "invites", "kick", "owner"],
         },
         {
           title: "AI",
@@ -998,6 +998,37 @@ program
       const data = await api.prestige(nodeId);
       const ver = data.version ?? data.newVersion ?? "";
       console.log(chalk.green(`✓ Prestiged`) + (ver !== "" ? `  ${chalk.dim("version " + ver)}` : ""));
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEAM
+// ─────────────────────────────────────────────────────────────────────────────
+program
+  .command("team")
+  .description("Show the owner and contributors for the current tree")
+  .action(async () => {
+    const cfg = requireAuth();
+    if (!cfg.activeRootId)
+      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      const data = await api.getRoot(cfg.activeRootId);
+      const root = data.root || data;
+      const owner = root.rootOwner;
+      const contribs = root.contributors || [];
+      console.log(chalk.bold("Owner:"));
+      console.log(`  ${owner?.username || owner?._id || owner || "unknown"}`);
+      if (contribs.length) {
+        console.log(chalk.bold("Contributors:"));
+        for (const c of contribs) {
+          console.log(`  ${c.username || c._id || c}`);
+        }
+      } else {
+        console.log(chalk.dim("  No other contributors"));
+      }
     } catch (e) {
       console.error(chalk.red(e.message));
     }
