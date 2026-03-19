@@ -84,7 +84,7 @@ Commands available without entering a tree.
 | `mkroot <name>`               | Create a new root tree                                                                                              |
 | `home`                        | Leave current tree, return to user home                                                                             |
 | `ideas`                       | List pending/stuck/processing ideas. Flags: `--pending` `--processing` `--stuck` `--done` `--all`. Stack to combine |
-| `idea <message>`              | Send an idea, get an AI response, and auto-navigate to where it was placed                                          |
+| `idea <message>`              | Send an idea from anywhere — AI places it in the right tree and navigates you there                                 |
 | `idea-store <content>`        | Save a raw idea for later without processing                                                                        |
 | `rm-idea <id> -f`             | Delete a raw idea                                                                                                   |
 | `idea-place <id or message>`  | AI-place an idea (fire-and-forget). Pass a raw idea ID or type content directly                                     |
@@ -104,7 +104,7 @@ Commands available once you are inside a tree.
 | -------------- | ------------------------------------------------ |
 | `pwd`          | Print current path                               |
 | `ls` / `ls -l` | List children (long format shows IDs and status) |
-| `cd <name>`    | Navigate into a child (supports `..` and `/`)    |
+| `cd <name>`    | Navigate into a child (supports `..`, `/`, and `-r` to search whole tree) |
 | `tree`         | Render the subtree from your current node        |
 
 ### Node Management
@@ -155,7 +155,7 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 
 | Command                     | Description                                      |
 | --------------------------- | ------------------------------------------------ |
-| `understand [perspective]`  | Start an understanding run from the current node |
+| `understand [perspective]`  | Start an understanding run from the current node. Waits and returns the final encoding |
 | `understandings`            | List understanding runs                          |
 | `understand-status <runId>` | Check run progress                               |
 | `understand-stop <runId>`   | Stop a running understanding run                 |

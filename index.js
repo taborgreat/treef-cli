@@ -81,6 +81,21 @@ function getChildren(data) {
   return node.children || [];
 }
 
+// Flatten a full tree into [{node, pathStack}] entries for tree-wide search
+function flattenTree(node, pathStack = []) {
+  const results = [];
+  const entry = { node, pathStack: [...pathStack, { id: node._id, name: node.name }] };
+  results.push(entry);
+  if (Array.isArray(node.children)) {
+    for (const child of node.children) {
+      if (child && typeof child === "object" && child._id) {
+        results.push(...flattenTree(child, entry.pathStack));
+      }
+    }
+  }
+  return results;
+}
+
 function findChild(children, query) {
   const q = query.toLowerCase();
 
@@ -97,7 +112,7 @@ function findChild(children, query) {
   if (byName.length === 1) return byName[0];
   if (byName.length > 1) {
     console.error(
-      chalk.yellow(`Multiple children named "${query}". Use an ID to disambiguate:`),
+      chalk.yellow(`Multiple matches for "${query}". Use an ID to disambiguate (tip: rename one with: rename <name> <newname>):`),
     );
     byName.forEach((c) =>
       console.log(`  ${chalk.cyan(c.name)}  ${chalk.dim(c._id)}`),
@@ -110,7 +125,7 @@ function findChild(children, query) {
   if (byStart.length === 1) return byStart[0];
   if (byStart.length > 1) {
     console.error(
-      chalk.yellow(`Multiple matches for "${query}":`),
+      chalk.yellow(`Multiple matches for "${query}". Use an ID to disambiguate (tip: rename one with: rename <name> <newname>):`),
     );
     byStart.forEach((c) =>
       console.log(`  ${chalk.cyan(c.name)}  ${chalk.dim(c._id)}`),
@@ -123,7 +138,7 @@ function findChild(children, query) {
   if (bySub.length === 1) return bySub[0];
   if (bySub.length > 1) {
     console.error(
-      chalk.yellow(`Multiple matches for "${query}":`),
+      chalk.yellow(`Multiple matches for "${query}". Use an ID to disambiguate (tip: rename one with: rename <name> <newname>):`),
     );
     bySub.forEach((c) =>
       console.log(`  ${chalk.cyan(c.name)}  ${chalk.dim(c._id)}`),
@@ -442,8 +457,9 @@ program
 
 program
   .command("cd <nameOrId...>")
-  .description('Navigate into a child node by name or ID (use ".." to go up)')
-  .action(async (parts) => {
+  .description('Navigate into a child node by name or ID (use ".." to go up, -r to search whole tree)')
+  .option("-r, --recursive", "Search entire tree, not just direct children")
+  .action(async (parts, opts) => {
     const name = parts.join(" ");
     const cfg = requireAuth();
     if (!cfg.activeRootId)
@@ -454,27 +470,74 @@ program
         return console.log(chalk.dim("Already at root."));
       cfg.pathStack.pop();
       save(cfg);
-      return console.log(chalk.dim(currentPath(cfg)));
+      return;
     }
 
     if (name === "/") {
       cfg.pathStack = [];
       save(cfg);
-      return console.log(chalk.dim(currentPath(cfg)));
+      return;
     }
 
     const api = new TreeAPI(cfg.apiKey);
     try {
+      if (opts.recursive) {
+        const rootData = await api.getRoot(cfg.activeRootId);
+        const rootNode = rootData.root || rootData;
+        const all = flattenTree(rootNode);
+        const q = name.toLowerCase();
+
+        const matches = all.filter(({ node }) =>
+          node.name && (
+            node._id === name ||
+            node._id.startsWith(name) ||
+            node.name.toLowerCase() === q ||
+            node.name.toLowerCase().startsWith(q) ||
+            node.name.toLowerCase().includes(q)
+          )
+        );
+
+        if (!matches.length) {
+          return console.log(chalk.yellow(`No node matching "${name}"`));
+        }
+        if (matches.length === 1) {
+          cfg.pathStack = matches[0].pathStack.slice(1);
+          save(cfg);
+          return;
+        }
+        console.log(chalk.yellow(`Multiple matches for "${name}" — use a more specific name or cd <id> directly:`));
+        matches.forEach(({ node, pathStack }) => {
+          const fullPath = "/" + pathStack.map(n => n.name).join("/");
+          console.log(`  ${chalk.cyan(fullPath)}  ${chalk.dim(node._id)}`);
+        });
+        return;
+      }
+
       const nodeId = currentNodeId(cfg);
       const data = await api.getNode(nodeId);
       const children = getChildren(data);
-
       const target = findChild(children, name);
-      if (!target) return;
+
+      if (!target) {
+        // If it looks like an ID, search the full tree automatically
+        // Otherwise hint the user to use -r
+        const looksLikeId = /^[0-9a-f-]{8,}$/i.test(name);
+        if (!looksLikeId) {
+          console.log(chalk.dim(`  (tip: use "cd ${name} -r" to search the whole tree)`));
+          return;
+        }
+        const rootData = await api.getRoot(cfg.activeRootId);
+        const rootNode = rootData.root || rootData;
+        const all = flattenTree(rootNode);
+        const match = all.find(({ node }) => node._id === name || node._id.startsWith(name));
+        if (!match) return console.log(chalk.yellow(`No node with ID "${name}"`));
+        cfg.pathStack = match.pathStack.slice(1);
+        save(cfg);
+        return;
+      }
 
       cfg.pathStack.push({ id: target._id, name: target.name });
       save(cfg);
-      console.log(chalk.dim(currentPath(cfg)));
     } catch (e) {
       console.error(chalk.red(e.message));
     }
