@@ -29,6 +29,10 @@ treef root Life Plan       # switch into a tree
 treef ls                   # list children
 treef cd Health            # navigate deeper
 treef tree                 # render the subtree
+treef chat went to doctor appointment today. told me to rest to recover my ankle
+treef place create a plan to workout 3 times a week
+treef chat i did the 20 pushups. what should i do now?
+treef understand tell me about my general physical and mental trends
 ```
 
 ---
@@ -64,7 +68,7 @@ Commands available without entering a tree.
 | `rm-idea <id> -f`             | Delete a raw idea                                                                                                   |
 | `idea-place <id or message>`  | AI-place an idea (fire-and-forget). Pass a raw idea ID or type content directly                                     |
 | `idea-auto [on\|off]`         | Toggle automatic placement of pending raw ideas every 15 min (Standard plan+). No arg = show current status         |
-| `idea-transfer <id> <nodeId>` | Transfer a raw idea to a specific node                                                                              |
+| `idea-transfer <id> <nodeId>` | Manually transfer a raw idea to a specific node (use when you know exactly where it should go or don't want AI)     |
 | `notes`                       | List your user-level notes                                                                                          |
 | `chats`                       | In home: your profile chats. In tree: current node's chats                                                          |
 | `contributions`               | List your recent contributions                                                                                      |
@@ -118,12 +122,13 @@ Date is `MM/DD/YYYY`, time is `HH:MM` or `HH:MMam/pm`, reeffect is hours (defaul
 
 ### AI
 
-| Command           | Description                                                               |
-| ----------------- | ------------------------------------------------------------------------- |
-| `chat <message>`  | Chat with AI about the current node/branch                                |
-| `chats`           | Node chats (current node). `chats tree` = all chats across the whole tree |
-| `place <message>` | AI-place content into the current branch (write)                          |
-| `query <message>` | Query AI about the current branch (read-only)                             |
+| Command           | Description                                                                    |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `chat <message>`  | Chat with AI about the current node/branch — returns a conversational response |
+| `place <message>` | AI writes content into the current branch based on your message                |
+| `query <message>` | Ask AI about the current branch without writing anything (read-only)           |
+| `chats`           | View past AI chat history for the current node                                 |
+| `chats tree`      | View all AI chat history across the whole tree                                 |
 
 ### Understanding Runs
 
