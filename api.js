@@ -94,6 +94,9 @@ class TreeAPI {
   setDreamTime(rootId, dreamTime) {
     return this.post(`/root/${rootId}/dream-time`, { dreamTime });
   }
+  retireRoot(rootId) {
+    return this.post(`/root/${rootId}/retire`, {});
+  }
 
   // ── Node ─────────────────────────────────────────────────────────────────
   getNode(nodeId) {

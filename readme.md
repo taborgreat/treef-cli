@@ -82,6 +82,7 @@ Commands available without entering a tree.
 | `use <name>`                  | Switch active root tree                                                                                             |
 | `root <name>`                 | Switch active root tree (alias for use)                                                                             |
 | `mkroot <name>`               | Create a new root tree                                                                                              |
+| `retire [name] -f`            | Leave a shared tree, or delete if you are the sole owner. Name optional if inside a tree                            |
 | `home`                        | Leave current tree, return to user home                                                                             |
 | `ideas`                       | List pending/stuck/processing ideas. Flags: `--pending` `--processing` `--stuck` `--done` `--all`. Stack to combine |
 | `idea <message>`              | Send an idea from anywhere — AI places it in the right tree and navigates you there                                 |

@@ -169,7 +169,7 @@ program
         },
         {
           title: "User Home (no tree required)",
-          cmds: ["roots", "use", "root", "mkroot", "home", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions", "share-token", "share", "link"],
+          cmds: ["roots", "use", "root", "mkroot", "retire", "home", "ideas", "idea", "idea-store", "rm-idea", "idea-place", "idea-auto", "idea-transfer", "contributions", "share-token", "share", "link"],
         },
         {
           title: "Navigation (inside a tree)",
@@ -385,6 +385,47 @@ program
         chalk.green(`✓ Created tree "${name}"  `) +
           chalk.dim(data.root?._id || ""),
       );
+    } catch (e) {
+      console.error(chalk.red(e.message));
+    }
+  });
+
+program
+  .command("retire [nameOrId...]")
+  .description("Leave a shared tree, or delete if you are the sole owner. Name optional if inside a tree")
+  .option("-f, --force", "Skip confirmation")
+  .action(async (parts, opts) => {
+    const cfg = requireAuth();
+    const api = new TreeAPI(cfg.apiKey);
+    try {
+      let rootId, rootName;
+      if (parts && parts.length) {
+        const nameOrId = parts.join(" ");
+        const data = await api.getUser(cfg.userId);
+        const roots = data.roots || data.user?.roots || [];
+        const root = findChild(roots, nameOrId);
+        if (!root) return;
+        rootId = root._id;
+        rootName = root.name;
+      } else if (cfg.activeRootId) {
+        rootId = cfg.activeRootId;
+        rootName = cfg.activeRootName || rootId;
+      } else {
+        return console.log(chalk.yellow("Specify a tree name, or enter a tree first."));
+      }
+      if (!opts.force) {
+        return console.log(
+          chalk.yellow(`Are you sure? Run: retire ${rootName} -f`),
+        );
+      }
+      await api.retireRoot(rootId);
+      console.log(chalk.green(`✓ Retired "${rootName}"`));
+      if (cfg.activeRootId === rootId) {
+        cfg.activeRootId = null;
+        cfg.activeRootName = null;
+        cfg.pathStack = [];
+        save(cfg);
+      }
     } catch (e) {
       console.error(chalk.red(e.message));
     }
