@@ -464,11 +464,24 @@ program
   .option("-l", "Long format with IDs and status")
   .action(async ({ l }) => {
     const cfg = requireAuth();
-    if (!cfg.activeRootId)
-      return console.log(
-        chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"),
-      );
     const api = new TreeAPI(cfg.apiKey);
+    if (!cfg.activeRootId) {
+      // At home — list roots
+      try {
+        const data = await api.getUser(cfg.userId);
+        const roots = data.roots || data.user?.roots || [];
+        if (!roots.length) return console.log(chalk.dim("No trees yet. Run: mkroot <name>"));
+        if (l) {
+          printTable(roots, [
+            { key: "name", label: "Name", width: 28 },
+            { key: "_id", label: "ID", width: 28 },
+          ]);
+        } else {
+          console.log(roots.map((r) => chalk.cyan(r.name)).join(chalk.dim("  ·  ")));
+        }
+      } catch (e) { console.error(chalk.red(e.message)); }
+      return;
+    }
     try {
       const nodeId = currentNodeId(cfg);
       const data = await api.getNode(nodeId);
@@ -506,8 +519,21 @@ program
   .action(async (parts, opts) => {
     const name = parts.join(" ");
     const cfg = requireAuth();
-    if (!cfg.activeRootId)
-      return console.log(chalk.yellow("No tree selected. Run: use <name>, roots, or mkroot <name>"));
+    if (!cfg.activeRootId) {
+      // At home — treat cd as entering a root
+      const api = new TreeAPI(cfg.apiKey);
+      try {
+        const data = await api.getUser(cfg.userId);
+        const roots = data.roots || data.user?.roots || [];
+        const root = findChild(roots, name);
+        if (!root) return;
+        cfg.activeRootId = root._id;
+        cfg.activeRootName = root.name;
+        cfg.pathStack = [];
+        save(cfg);
+      } catch (e) { console.error(chalk.red(e.message)); }
+      return;
+    }
 
     if (name === "..") {
       if (cfg.pathStack.length === 0)
