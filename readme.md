@@ -1,6 +1,6 @@
 # TreeOS
 
-Terminal client for [Tree](https://tree.tabors.site) — a context management system for organizing AI, data, and ideas into living structure. Navigate your trees like a filesystem.
+Terminal client for [Tree](https://treeOS.ai) — a context management system for organizing AI, data, and ideas into living structure. Navigate your trees like a filesystem.
 
 ## Install
 
@@ -11,7 +11,7 @@ npm install -g treeos
 ## Quick Start
 
 ```bash
-treeos login --key YOUR_API_KEY    # get your key from tree.tabors.site
+treeos login --key YOUR_API_KEY    # get your key from treeOS.ai
 treeos start                       # launch the interactive shell
 ```
 
@@ -314,16 +314,16 @@ link gateway                     # open the gateway view
 
 ## How It Works
 
-All commands map to the [Tree REST API](https://tree.tabors.site/about/api). Config stored in `~/.treeos/config.json`.
+All commands map to the [Tree REST API](https://treeOS.ai/about/api). Config stored in `~/.treeos/config.json`.
 
 ## Links
 
-- [Tree](https://tree.tabors.site)
-- [Getting Started](https://tree.tabors.site/about/gettingstarted)
-- [Raw Ideas](https://tree.tabors.site/about/raw-ideas)
-- [Energy System](https://tree.tabors.site/about/energy)
-- [Dreams](https://tree.tabors.site/about/dreams)
-- [Gateway](https://tree.tabors.site/about/gateway)
-- [API Reference](https://tree.tabors.site/about/api)
-- [CLI Guide](https://tree.tabors.site/about/cli)
-- [Blog](https://tree.tabors.site/blog)
+- [Tree](https://treeOS.ai)
+- [Getting Started](https://treeOS.ai/about/gettingstarted)
+- [Raw Ideas](https://treeOS.ai/about/raw-ideas)
+- [Energy System](https://treeOS.ai/about/energy)
+- [Dreams](https://treeOS.ai/about/dreams)
+- [Gateway](https://treeOS.ai/about/gateway)
+- [API Reference](https://treeOS.ai/about/api)
+- [CLI Guide](https://treeOS.ai/about/cli)
+- [Blog](https://treeOS.ai/blog)

@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-const BASE_SITE = "https://tree.tabors.site";
+const BASE_SITE = "https://treeOS.ai";
 const BASE = BASE_SITE + "/api/v1";
 
 class TreeAPI {

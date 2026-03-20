@@ -65,16 +65,16 @@ program
       out += `  A living structure for everything you're building, thinking, and tracking.\n`;
       out += `  Organize knowledge into trees of nodes, each with history, AI context,\n`;
       out += `  goals, and values. Navigate and manage your trees from the terminal.\n\n`;
-      out += `  https://tree.tabors.site/about\n\n`;
+      out += `  https://treeOS.ai/about\n\n`;
       out += `  Docs:\n`;
-      out += `    Getting Started    https://tree.tabors.site/about/gettingstarted\n`;
-      out += `    Raw Ideas          https://tree.tabors.site/about/raw-ideas\n`;
-      out += `    Energy System      https://tree.tabors.site/about/energy\n`;
-      out += `    Tree Dreams        https://tree.tabors.site/about/dreams\n`;
-      out += `    CLI                https://tree.tabors.site/about/cli\n`;
-      out += `    Gateway            https://tree.tabors.site/about/gateway\n`;
-      out += `    API Reference      https://tree.tabors.site/about/api\n`;
-      out += `    Blog               https://tree.tabors.site/blog\n\n`;
+      out += `    Getting Started    https://treeOS.ai/about/gettingstarted\n`;
+      out += `    Raw Ideas          https://treeOS.ai/about/raw-ideas\n`;
+      out += `    Energy System      https://treeOS.ai/about/energy\n`;
+      out += `    Tree Dreams        https://treeOS.ai/about/dreams\n`;
+      out += `    CLI                https://treeOS.ai/about/cli\n`;
+      out += `    Gateway            https://treeOS.ai/about/gateway\n`;
+      out += `    API Reference      https://treeOS.ai/about/api\n`;
+      out += `    Blog               https://treeOS.ai/blog\n\n`;
 
       const fmtUsage = (c) => {
         return (c.name() + " " + c.usage()).replace(/ \[options\]/g, "").trim();
