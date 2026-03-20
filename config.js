@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-const CONFIG_DIR = path.join(os.homedir(), ".treef-cli");
+const CONFIG_DIR = path.join(os.homedir(), ".treeos");
 const CONFIG_PATH = path.join(CONFIG_DIR, "config.json");
 
 const DEFAULT_CONFIG = {
@@ -32,7 +32,7 @@ function save(config) {
 function requireAuth() {
   const cfg = load();
   if (!cfg.apiKey || !cfg.userId) {
-    throw new Error("Not logged in. Run: treef login --key YOUR_API_KEY");
+    throw new Error("Not logged in. Run: treeos login --key YOUR_API_KEY");
   }
   return cfg;
 }

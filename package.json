@@ -1,10 +1,10 @@
 {
-  "name": "treef-cli",
-  "version": "3.1.0",
+  "name": "treeos",
+  "version": "1.0.0",
   "description": "CLI for Tree — navigate and manage your nodes like a filesystem",
   "main": "index.js",
   "bin": {
-    "treef": "./index.js"
+    "treeos": "./index.js"
   },
   "scripts": {
     "start": "node index.js"
@@ -14,7 +14,7 @@
     "cli",
     "nodes"
   ],
-  "author": "TreeF",
+  "author": "TreeOS",
   "license": "ISC",
   "dependencies": {
     "chalk": "^4.1.2",

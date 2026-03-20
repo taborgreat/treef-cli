@@ -7,15 +7,8 @@ const { load, currentPath } = require("./config");
 
 const program = new Command();
 
-console.log(
-  chalk.yellow.bold("\n  treef-cli has been renamed to treeos.") +
-  chalk.yellow("\n  Install the new package: ") +
-  chalk.white("npm install -g treeos") +
-  chalk.yellow("\n  This package will no longer receive updates.\n"),
-);
-
 program
-  .name("treef")
+  .name("treeos")
   .description(
     "CLI for Tree — navigate and manage your nodes like a filesystem",
   )
@@ -167,7 +160,7 @@ const startShell = async () => {
     if (!cfg.apiKey) {
       console.log(
         chalk.yellow(
-          "Not logged in. Run: treef login --key YOUR_KEY",
+          "Not logged in. Run: treeos login --key YOUR_KEY",
         ),
       );
       return;
@@ -186,7 +179,7 @@ const startShell = async () => {
     });
 
     console.log(
-      chalk.bold.green("TreeF Shell") +
+      chalk.bold.green("TreeOS Shell") +
         chalk.dim('  (type "exit" to quit, "help" for commands)'),
     );
     console.log("");

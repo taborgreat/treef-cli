@@ -1,10 +1,4 @@
-# treef-cli
-
-> **This package has been renamed to [`treeos`](https://www.npmjs.com/package/treeos).**
-> Install the new package: `npm install -g treeos`
-> This package will no longer receive updates.
-
----
+# TreeOS
 
 Terminal client for [Tree](https://tree.tabors.site) — a context management system for organizing AI, data, and ideas into living structure. Navigate your trees like a filesystem.
 
@@ -17,8 +11,8 @@ npm install -g treeos
 ## Quick Start
 
 ```bash
-treef login --key YOUR_API_KEY    # get your key from tree.tabors.site
-treef start                       # launch the interactive shell
+treeos login --key YOUR_API_KEY    # get your key from tree.tabors.site
+treeos start                       # launch the interactive shell
 ```
 
 ```
@@ -296,7 +290,7 @@ tags                             # see where you've been @mentioned
 ### Morning routine from the terminal
 
 ```
-treef start
+treeos start
 root Life
 calendar                         # what's scheduled today
 cd -r Workouts                   # jump straight there
@@ -320,7 +314,7 @@ link gateway                     # open the gateway view
 
 ## How It Works
 
-All commands map to the [Tree REST API](https://tree.tabors.site/about/api). Config stored in `~/.treef-cli/config.json`.
+All commands map to the [Tree REST API](https://tree.tabors.site/about/api). Config stored in `~/.treeos/config.json`.
 
 ## Links
 
