@@ -7,6 +7,13 @@ const { load, currentPath } = require("./config");
 
 const program = new Command();
 
+console.log(
+  chalk.yellow.bold("\n  treef-cli has been renamed to treeos.") +
+  chalk.yellow("\n  Install the new package: ") +
+  chalk.white("npm install -g treeos") +
+  chalk.yellow("\n  This package will no longer receive updates.\n"),
+);
+
 program
   .name("treef")
   .description(

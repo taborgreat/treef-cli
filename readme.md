@@ -1,11 +1,17 @@
 # treef-cli
 
+> **This package has been renamed to [`treeos`](https://www.npmjs.com/package/treeos).**
+> Install the new package: `npm install -g treeos`
+> This package will no longer receive updates.
+
+---
+
 Terminal client for [Tree](https://tree.tabors.site) — a context management system for organizing AI, data, and ideas into living structure. Navigate your trees like a filesystem.
 
 ## Install
 
 ```bash
-npm install -g treef-cli
+npm install -g treeos
 ```
 
 ## Quick Start
